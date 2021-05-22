@@ -4,6 +4,12 @@ import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.Hand;
 
 public class ScoreCalculator {
+    private ScoreComposite score;
+
+    public ScoreCalculator() {
+        score = new ScoreComposite();
+    }
+
     void calculate(String stage, int score) {
 
     }
