@@ -126,8 +126,10 @@ public class Cribbage extends CardGame {
   private final Actor[] scoreActors = {null, null}; //, null, null };
   private final Location textLocation = new Location(350, 450);
   private final Hand[] hands = new Hand[nPlayers];
+  private Hand[] startingHands = new Hand[nPlayers];
   private Hand starter;
   private Hand crib;
+  private RuleStrategy ruleStrategy = new TraditionalRule();
 
   public static void setStatus(String string) { cribbage.setStatusText(string); }
 
@@ -181,17 +183,33 @@ private void discardToCrib() {
 	RowLayout layout = new RowLayout(cribLocation, cribWidth);
 	layout.setRotationAngle(0);
 	crib.setView(this, layout);
-	// crib.setTargetArea(cribTarget);
+//	 crib.setTargetArea(cribTarget);
 	crib.draw();
+
+	int playerNumber = 0;
+
+	startingHands[0] = new Hand(deck);
+	startingHands[1] = new Hand(deck);
+
 	for (IPlayer player: players) {
 		for (int i = 0; i < nDiscards; i++) {
 			transfer(player.discard(), crib);
 		}
+
+
+		for(int i = 0; i < hands[playerNumber].getNumberOfCards(); i++) {
+			startingHands[playerNumber].getCardList().add(hands[playerNumber].get(i));
+		}
+
+		playerNumber++;
+
 		crib.sort(Hand.SortType.POINTPRIORITY, true);
 	}
 }
 
 private void starter(Hand pack) {
+	final int dealer = 1;
+
 	starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
 	RowLayout layout = new RowLayout(starterLocation, 0);
 	layout.setRotationAngle(0);
@@ -200,6 +218,10 @@ private void starter(Hand pack) {
 	Card dealt = randomCard(pack);
 	dealt.setVerso(false);
 	transfer(dealt, starter);
+
+	// Updates scores for dealer
+	scores[dealer] += ruleStrategy.getScore(starter, "starter");
+	updateScore(dealer);
 }
 
 int total(Hand hand) {
@@ -226,17 +248,20 @@ class Segment {
 
 private void play() {
 	final int thirtyone = 31;
+	final int fifteen = 15;
 	List<Hand> segments = new ArrayList<>();
 	int currentPlayer = 0; // Player 1 is dealer
 	Segment s = new Segment();
 	s.reset(segments);
 	while (!(players[0].emptyHand() && players[1].emptyHand())) {
-		// System.out.println("segments.size() = " + segments.size());
+//		 System.out.println("segments.size() = " + segments.size());
 		Card nextCard = players[currentPlayer].lay(thirtyone-total(s.segment));
 		if (nextCard == null) {
 			if (s.go) {
 				// Another "go" after previous one with no intervening cards
 				// lastPlayer gets 1 point for a "go"
+				scores[currentPlayer] += 1;
+				updateScore(currentPlayer);
 				s.newSegment = true;
 			} else {
 				// currentPlayer says "go"
@@ -247,11 +272,18 @@ private void play() {
 			s.lastPlayer = currentPlayer; // last Player to play a card in this segment
 			transfer(nextCard, s.segment);
 			if (total(s.segment) == thirtyone) {
-				// lastPlayer gets 2 points for a 31
+				// lastPlayer gets 2 points for a
+				scores[currentPlayer] += 2;
+				updateScore(currentPlayer);
 				s.newSegment = true;
 				currentPlayer = (currentPlayer+1) % 2;
 			} else {
 				// if total(segment) == 15, lastPlayer gets 2 points for a 15
+				if (total(s.segment) == fifteen) {
+					scores[currentPlayer] += 2;
+					updateScore(currentPlayer);
+				}
+
 				if (!s.go) { // if it is "go" then same player gets another turn
 					currentPlayer = (currentPlayer+1) % 2;
 				}
@@ -266,7 +298,11 @@ private void play() {
 
 void showHandsCrib() {
 	// score player 0 (non dealer)
+//	System.out.println(startingHands[0]);
+
 	// score player 1 (dealer)
+//	System.out.println(startingHands[1]);
+
 	// score crib (for dealer)
 }
 
@@ -285,6 +321,8 @@ void showHandsCrib() {
 	  pack.setVerso(true);
 	  pack.draw();
 	  addActor(new TextActor("Seed: " + SEED, Color.BLACK, bgColor, normalFont), seedLocation);
+
+//	  ruleStrategy.setRule(new TraditionalRule());
 
 	  /* Play the round */
 	  deal(pack, hands);
