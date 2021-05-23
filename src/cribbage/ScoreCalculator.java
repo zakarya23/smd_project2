@@ -7,7 +7,7 @@ public class ScoreCalculator {
     private ScoreComposite score;
 
     public ScoreCalculator() {
-        score = new ScoreComposite();
+        score = new ScoreComposite("TotalScore");
     }
 
     void calculate(String stage, int score) {
@@ -32,5 +32,14 @@ public class ScoreCalculator {
 //            System.out.println(lastCardPlayed.getRank());
 //            System.out.println(segment.get(segment.getNumberOfCards() - 1));
         }
+    }
+
+    public int getScore() {
+        return score.getScore();
+    }
+
+    public String logScore(Score scoreItem) {
+        return "score" + "," + player + "," + getScore() + "," + scoreItem.toString();
+
     }
 }

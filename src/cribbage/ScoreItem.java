@@ -6,12 +6,18 @@ import java.util.ArrayList;
 
 public class ScoreItem implements Score {
     String name;
-    int point;
+    int points;
     ArrayList<Card> cards = new ArrayList<Card>();
 
-    public ScoreItem(String name, int point, ArrayList<Card> cards) {
+    public ScoreItem(String name, int points, ArrayList<Card> cards) {
         this.name = name;
-        this.point = point;
+        this.points = points;
         this.cards = cards;
     }
+
+    @Override
+    public String toString() {
+        return points + "," + cards.toString();
+    }
+
 }

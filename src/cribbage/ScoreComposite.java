@@ -6,8 +6,9 @@ public class ScoreComposite implements Score {
     private String name;
     private ArrayList<ScoreItem> scores;
 
-    public ScoreComposite() {
-        scores = new ArrayList<ScoreItem>();
+    public ScoreComposite(String name) {
+        this.name = name;
+        this.scores = new ArrayList<ScoreItem>();
     }
 
 
@@ -15,7 +16,7 @@ public class ScoreComposite implements Score {
     public int getScore() {
         int score = 0;
         for (ScoreItem item: scores) {
-            score += item.point;
+            score += item.points;
         }
         return score;
     }
