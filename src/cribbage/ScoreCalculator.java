@@ -38,8 +38,5 @@ public class ScoreCalculator {
         return score.getScore();
     }
 
-    public String logScore(Score scoreItem) {
-        return "score" + "," + player + "," + getScore() + "," + scoreItem.toString();
 
-    }
 }

@@ -3,6 +3,7 @@ package cribbage;
 import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.Hand;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,18 @@ public class TraditionalRule implements RuleStrategy {
         }
     }
 
+    public enum Phase {
+        STARTER(new Point[] {Point.STARTER}),
+        PLAY(new Point[] {Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR2, Point.PAIR3, Point.PAIR4}),
+        SHOW(new Point[] {Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK });
+
+        public final Point[] rules;
+
+        Phase(Point[] rules) {
+            this.rules = rules;
+        }
+    }
+
     public int getScore(Hand hand, String phase) {
         switch(phase) {
             case "starter":
@@ -40,115 +53,198 @@ public class TraditionalRule implements RuleStrategy {
         return 0;
     }
 
-    public Score getScore(String phase, Card starter) {
-        ScoreComposite scoreComposite = new ScoreComposite(phase);
 
-        if (starter.getRank() == (Cribbage.Rank.JACK)) {
-            scoreComposite.add(new ScoreItem("starter", STARTER_POINT, new ArrayList<>(List.of(starter)) ));
+    public Score getAllScores(String phase, Hand hand, Card starter) {
+        ScoreComposite score = new ScoreComposite(phase);
+        switch (phase) {
+            case "starter":
+                for (Point rule : Phase.STARTER.rules) {
+                    score.add(getScore(rule, hand, starter));
+                }
+                break;
+            case "play":
+                for (Point rule : Phase.PLAY.rules) {
+                    score.add(getScore(rule, hand, starter));
+                }
+                break;
+            case "show":
+                for (Point rule : Phase.SHOW.rules) {
+                    score.add(getScore(rule, hand, starter));
+                }
+                break;
+            default:
+                // do nothing
+        }
+
+        return score;
+    }
+
+    public Score getScore(Point type, Hand hand, Card starter) {
+        Score score = null;
+        switch (type) {
+            case PAIR2:
+                score = getPairs(type, hand, starter);
+                break;
+            case RUN3:
+                score = getRuns(type, hand, starter);
+                break;
+            default:
+                // do nothing
+        }
+
+        return score;
+    }
+
+    public Score getPairs(Point type, Hand hand, Card starter) {
+        if (starter != null) {
+            hand.insert(starter, false);
+        }
+        Hand[] pairs = null;
+
+        switch (type) {
+            case PAIR2:
+                pairs = hand.extractPairs();
+            case PAIR3:
+                pairs = hand.extractTrips();
+            case PAIR4:
+                pairs = hand.extractQuads();
+        }
+
+        if (pairs == null) {
+            return null;
+        }
+
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+        for (Hand pair: pairs) {
+            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList() ) );
+        }
+
+        return scoreComposite;
+
+    }
+
+    public Score getRuns(Point type, Hand hand, Card starter) {
+        if (starter != null) {
+            hand.insert(starter, false);
+        }
+
+        Hand[] runs = hand.extractSequences(3);
+
+        if (runs.length == 0) {
+            return null;
+        }
+
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+
+        for (Hand run: runs) {
+            scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList() ) );
         }
 
         return scoreComposite;
     }
 
-    public Score getScore(String phase, Hand play) {
-        ScoreComposite scoreComposite = new ScoreComposite(phase);
 
 
-        // totals
-        if (play.getScore() == 15) {
-            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, play.getCardList() ));
-        }
-        if (play.getScore() == 31) {
-            scoreComposite.add(new ScoreItem(Point.THIRTYONE.name, Point.THIRTYONE.points, play.getCardList() ));
-        }
-
-        // Pairs
-        if (!play.getPairs().isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, play.getCardList() ));
-        }
-        if (!play.getTrips().isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, play.getCardList() ));
-        }
-        if (!play.getQuads().isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.PAIR4.name, Point.PAIR4.points, play.getCardList() ));
-        }
-
-
-        //runs
-        if (!play.getSequences(3).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, play.getCardList() ));
-        }
-        if (!play.getSequences(4).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, play.getCardList() ));
-        }
-        if (!play.getSequences(5).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, play.getCardList() ));
-        }
-        if (!play.getSequences(6).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN6.name, Point.RUN6.points, play.getCardList() ));
-        }
-        if (!play.getSequences(7).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN7.name, Point.RUN7.points, play.getCardList() ));
-        }
-
-
-
-        return scoreComposite;
-    }
-
-    public Score getScore(String phase, Card starter, Hand playerHand, Hand crib) {
-        ScoreComposite scoreComposite = new ScoreComposite(phase);
-        playerHand.insert(starter,false);
-        ArrayList<Card> cards;
-
-        // totals
-        if (playerHand.getScore() == 15) {
-            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, playerHand.getCardList() ));
-        }
-
-        //runs
-        if (!playerHand.getSequences(3).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, playerHand.getCardList() ));
-        }
-        if (!playerHand.getSequences(4).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, playerHand.getCardList() ));
-        }
-        if (!playerHand.getSequences(5).isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, playerHand.getCardList() ));
-        }
-
-        // Pairs
-        if (!playerHand.getPairs().isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, playerHand.getCardList() ));
-        }
-        if (!playerHand.getTrips().isEmpty()) {
-            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, playerHand.getCardList() ));
-        }
-
-        //flush
-        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) < 4 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) < 4 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) < 4 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) < 4 ) {
-            scoreComposite.add(new ScoreItem(Point.FLUSH4.name, Point.FLUSH4.points, playerHand.getCardList()));
-        }
-
-
-        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) == 5 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) == 5 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) == 5 ||
-                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) == 5 ) {
-            scoreComposite.add(new ScoreItem(Point.FLUSH5.name, Point.FLUSH5.points, playerHand.getCardList()));
-        }
-
-        if ( (cards.add(playerHand.getCard(starter.getSuit(), Cribbage.Rank.JACK))).isEmpty) {
-            scoreComposite.add(new ScoreItem(Point.JACK.name, Point.JACK.points, playerHand.getCardList()));
-
-        }
-
-
-
-    }
+//    public Score getScore(String phase, Hand play) {
+//        ScoreComposite scoreComposite = new ScoreComposite(phase);
+//
+//
+//        // totals
+//        if (play.getScore() == 15) {
+//            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, play.getCardList() ));
+//        }
+//        if (play.getScore() == 31) {
+//            scoreComposite.add(new ScoreItem(Point.THIRTYONE.name, Point.THIRTYONE.points, play.getCardList() ));
+//        }
+//
+//        // Pairs
+//        if (!play.getPairs().isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, play.getCardList() ));
+//        }
+//        if (!play.getTrips().isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, play.getCardList() ));
+//        }
+//        if (!play.getQuads().isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.PAIR4.name, Point.PAIR4.points, play.getCardList() ));
+//        }
+//
+//
+//        //runs
+//        if (!play.getSequences(3).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, play.getCardList() ));
+//        }
+//        if (!play.getSequences(4).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, play.getCardList() ));
+//        }
+//        if (!play.getSequences(5).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, play.getCardList() ));
+//        }
+//        if (!play.getSequences(6).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN6.name, Point.RUN6.points, play.getCardList() ));
+//        }
+//        if (!play.getSequences(7).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN7.name, Point.RUN7.points, play.getCardList() ));
+//        }
+//
+//
+//
+//        return scoreComposite;
+//    }
+//
+//
+//    public Score getScore(String phase, Card starter, Hand playerHand, Hand crib) {
+//        ScoreComposite scoreComposite = new ScoreComposite(phase);
+//        playerHand.insert(starter,false);
+//        ArrayList<Card> cards;
+//
+//        // totals
+//        if (playerHand.getScore() == 15) {
+//            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, playerHand.getCardList() ));
+//        }
+//
+//        //runs
+//        if (!playerHand.getSequences(3).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, playerHand.getCardList() ));
+//        }
+//        if (!playerHand.getSequences(4).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, playerHand.getCardList() ));
+//        }
+//        if (!playerHand.getSequences(5).isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, playerHand.getCardList() ));
+//        }
+//
+//        // Pairs
+//        if (!playerHand.getPairs().isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, playerHand.getCardList() ));
+//        }
+//        if (!playerHand.getTrips().isEmpty()) {
+//            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, playerHand.getCardList() ));
+//        }
+//
+//        //flush
+//        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) < 4 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) < 4 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) < 4 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) < 4 ) {
+//            scoreComposite.add(new ScoreItem(Point.FLUSH4.name, Point.FLUSH4.points, playerHand.getCardList()));
+//        }
+//
+//
+//        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) == 5 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) == 5 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) == 5 ||
+//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) == 5 ) {
+//            scoreComposite.add(new ScoreItem(Point.FLUSH5.name, Point.FLUSH5.points, playerHand.getCardList()));
+//        }
+//
+//        if ( (cards.add(playerHand.getCard(starter.getSuit(), Cribbage.Rank.JACK))).isEmpty) {
+//            scoreComposite.add(new ScoreItem(Point.JACK.name, Point.JACK.points, playerHand.getCardList()));
+//
+//        }
+//
+//
+//
+//    }
 
 
 }
