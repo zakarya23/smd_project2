@@ -1,7 +1,8 @@
 package cribbage;
 
+import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.Hand;
 
 public interface RuleStrategy {
-    public int getScore(Hand hand, String phase);
+    public Score getAllScores(String phase, Hand hand, Card starter);
 }

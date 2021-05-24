@@ -221,7 +221,7 @@ private void starter(Hand pack) {
 	transfer(dealt, starter);
 
 	// Updates scores for dealer
-	scores[dealer] += ruleStrategy.getScore(starter, "starter");
+//	scores[dealer] += ruleStrategy.getScore(starter, "starter");
 	updateScore(dealer);
 }
 

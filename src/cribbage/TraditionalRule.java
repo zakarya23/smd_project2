@@ -3,13 +3,9 @@ package cribbage;
 import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.Hand;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
 public class TraditionalRule implements RuleStrategy {
-    private final int PAIR2_POINT = 2;
-    private final int STARTER_POINT = 2;
 
     public enum Point {
         STARTER("starter", 2),
@@ -29,9 +25,9 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     public enum Phase {
-        STARTER(new Point[] {Point.STARTER}),
-        PLAY(new Point[] {Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR2, Point.PAIR3, Point.PAIR4}),
-        SHOW(new Point[] {Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK });
+        STARTER(new Point[]{Point.STARTER}),
+        PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR2, Point.PAIR3, Point.PAIR4}),
+        SHOW(new Point[]{Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK});
 
         public final Point[] rules;
 
@@ -39,21 +35,7 @@ public class TraditionalRule implements RuleStrategy {
             this.rules = rules;
         }
     }
-
-    public int getScore(Hand hand, String phase) {
-        switch(phase) {
-            case "starter":
-                // Check for jack in starter
-                if(!hand.getCardsWithRank(Cribbage.Rank.JACK).isEmpty()) {
-                    return STARTER_POINT;
-                }
-                break;
-        }
-
-        return 0;
-    }
-
-
+    // returns a Score object that comprises all the scoreItems applicable in a given turn
     public Score getAllScores(String phase, Hand hand, Card starter) {
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
@@ -79,14 +61,38 @@ public class TraditionalRule implements RuleStrategy {
         return score;
     }
 
+    // returns a Score object of a specific type if the cards meet the criteria
     public Score getScore(Point type, Hand hand, Card starter) {
         Score score = null;
         switch (type) {
+            case STARTER:
+                score = getStarter(type, hand, starter);
+                break;
+            case FIFTEEN:
+            case THIRTYONE:
+                score = getTotals(type, hand, starter);
+                break;
+            case GO:
+                score = getGo(type, hand, starter);
+                break;
             case PAIR2:
+            case PAIR3:
+            case PAIR4:
                 score = getPairs(type, hand, starter);
                 break;
             case RUN3:
+            case RUN4:
+            case RUN5:
+            case RUN6:
+            case RUN7:
                 score = getRuns(type, hand, starter);
+                break;
+            case FLUSH4:
+            case FLUSH5:
+                score = getFlushes(type, hand, starter);
+                break;
+            case JACK:
+                score = getJack(type, hand, starter);
                 break;
             default:
                 // do nothing
@@ -95,6 +101,44 @@ public class TraditionalRule implements RuleStrategy {
         return score;
     }
 
+    // returns a starter ScoreItem if the starter card is a Jack
+    public Score getStarter(Point type, Hand hand, Card starter) {
+        if (starter.getRank().equals(Cribbage.Rank.JACK)) {
+            ArrayList<Card> cards = new ArrayList<Card>();
+            cards.add(starter);
+            return new ScoreItem(type.name, type.points, cards);
+        }
+        return null;
+    }
+
+    // returns a fifteen or thirtyone ScoreItem if the values of the card add up to 15 or 31
+    public Score getTotals(Point type, Hand hand, Card starter) {
+        if (starter != null) {
+            hand.insert(starter, false);
+        }
+        int total = hand.getScore();
+
+        if (total == 15 || total == 31) {
+            return new ScoreItem(type.name, type.points, hand.getCardList());
+        }
+
+        return null;
+    }
+
+    // returns a go ScoreItem if the values of the cards are below 31 but neither player can play another card
+    public Score getGo(Point type, Hand hand, Card starter) {
+        int total = hand.getScore();
+        boolean go = true;
+        ArrayList<Card> cards = hand.getCardList();
+        for (Card card: cards) {
+            if (card.getValue() + total < 31 );
+
+        }
+
+        return null;
+    }
+
+    // returns a Pair Score for any pairs in a given hand
     public Score getPairs(Point type, Hand hand, Card starter) {
         if (starter != null) {
             hand.insert(starter, false);
@@ -104,10 +148,13 @@ public class TraditionalRule implements RuleStrategy {
         switch (type) {
             case PAIR2:
                 pairs = hand.extractPairs();
+                break;
             case PAIR3:
                 pairs = hand.extractTrips();
+                break;
             case PAIR4:
                 pairs = hand.extractQuads();
+                break;
         }
 
         if (pairs == null) {
@@ -115,20 +162,20 @@ public class TraditionalRule implements RuleStrategy {
         }
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
-        for (Hand pair: pairs) {
-            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList() ) );
+        for (Hand pair : pairs) {
+            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
         }
 
         return scoreComposite;
-
     }
 
+    // returns a runs Score for any runs in a given hand
     public Score getRuns(Point type, Hand hand, Card starter) {
         if (starter != null) {
             hand.insert(starter, false);
         }
 
-        Hand[] runs = hand.extractSequences(3);
+        Hand[] runs = hand.extractSequences(type.points);
 
         if (runs.length == 0) {
             return null;
@@ -136,115 +183,52 @@ public class TraditionalRule implements RuleStrategy {
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
-        for (Hand run: runs) {
-            scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList() ) );
+        for (Hand run : runs) {
+            scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
         }
 
         return scoreComposite;
     }
 
+    // returns a flushes Score for any flushes in a given hand
+    public Score getFlushes(Point type, Hand hand, Card starter) {
+        int num;
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
 
-//    public Score getScore(String phase, Hand play) {
-//        ScoreComposite scoreComposite = new ScoreComposite(phase);
-//
-//
-//        // totals
-//        if (play.getScore() == 15) {
-//            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, play.getCardList() ));
-//        }
-//        if (play.getScore() == 31) {
-//            scoreComposite.add(new ScoreItem(Point.THIRTYONE.name, Point.THIRTYONE.points, play.getCardList() ));
-//        }
-//
-//        // Pairs
-//        if (!play.getPairs().isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, play.getCardList() ));
-//        }
-//        if (!play.getTrips().isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, play.getCardList() ));
-//        }
-//        if (!play.getQuads().isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.PAIR4.name, Point.PAIR4.points, play.getCardList() ));
-//        }
-//
-//
-//        //runs
-//        if (!play.getSequences(3).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, play.getCardList() ));
-//        }
-//        if (!play.getSequences(4).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, play.getCardList() ));
-//        }
-//        if (!play.getSequences(5).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, play.getCardList() ));
-//        }
-//        if (!play.getSequences(6).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN6.name, Point.RUN6.points, play.getCardList() ));
-//        }
-//        if (!play.getSequences(7).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN7.name, Point.RUN7.points, play.getCardList() ));
-//        }
-//
-//
-//
-//        return scoreComposite;
-//    }
-//
-//
-//    public Score getScore(String phase, Card starter, Hand playerHand, Hand crib) {
-//        ScoreComposite scoreComposite = new ScoreComposite(phase);
-//        playerHand.insert(starter,false);
-//        ArrayList<Card> cards;
-//
-//        // totals
-//        if (playerHand.getScore() == 15) {
-//            scoreComposite.add(new ScoreItem(Point.FIFTEEN.name, Point.FIFTEEN.points, playerHand.getCardList() ));
-//        }
-//
-//        //runs
-//        if (!playerHand.getSequences(3).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN3.name, Point.RUN3.points, playerHand.getCardList() ));
-//        }
-//        if (!playerHand.getSequences(4).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN4.name, Point.RUN4.points, playerHand.getCardList() ));
-//        }
-//        if (!playerHand.getSequences(5).isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.RUN5.name, Point.RUN5.points, playerHand.getCardList() ));
-//        }
-//
-//        // Pairs
-//        if (!playerHand.getPairs().isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.PAIR2.name, Point.PAIR2.points, playerHand.getCardList() ));
-//        }
-//        if (!playerHand.getTrips().isEmpty()) {
-//            scoreComposite.add(new ScoreItem(Point.PAIR3.name, Point.PAIR3.points, playerHand.getCardList() ));
-//        }
-//
-//        //flush
-//        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) < 4 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) < 4 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) < 4 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) < 4 ) {
-//            scoreComposite.add(new ScoreItem(Point.FLUSH4.name, Point.FLUSH4.points, playerHand.getCardList()));
-//        }
-//
-//
-//        if (playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.CLUBS) == 5 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.DIAMONDS) == 5 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.SPADES) == 5 ||
-//                playerHand.getNumberOfCardsWithSuit(Cribbage.Suit.HEARTS) == 5 ) {
-//            scoreComposite.add(new ScoreItem(Point.FLUSH5.name, Point.FLUSH5.points, playerHand.getCardList()));
-//        }
-//
-//        if ( (cards.add(playerHand.getCard(starter.getSuit(), Cribbage.Rank.JACK))).isEmpty) {
-//            scoreComposite.add(new ScoreItem(Point.JACK.name, Point.JACK.points, playerHand.getCardList()));
-//
-//        }
-//
-//
-//
-//    }
+        for (Cribbage.Suit suit : Cribbage.Suit.values()) {
+            num = hand.getNumberOfCardsWithSuit(suit);
+            if (num == 4) {
+                scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+                break;
+            }
+        }
 
+        hand.insert(starter, false);
+
+        for (Cribbage.Suit suit : Cribbage.Suit.values()) {
+            num = hand.getNumberOfCardsWithSuit(suit);
+            if (num == 5) {
+                scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+                break;
+            }
+        }
+
+        return scoreComposite;
+    }
+
+    //returns a jack Score if a given card has a Jack with the same suit as the starter card.
+    public Score getJack(Point type, Hand hand, Card starter) {
+        ArrayList<Card> cards = hand.getCardList();
+        for (Card card: cards) {
+            if (card.getRank().equals(Cribbage.Rank.JACK) && card.getSuit().equals(starter.getSuit())) {
+                ArrayList<Card> jack = new ArrayList<Card>();
+                cards.add(starter);
+                return new ScoreItem(type.name, type.points, jack);
+            }
+        }
+        return null;
+
+    }
 
 }
