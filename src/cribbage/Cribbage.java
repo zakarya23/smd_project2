@@ -130,6 +130,9 @@ public class Cribbage extends CardGame {
   private Hand starter;
   private Hand crib;
   private RuleStrategy ruleStrategy = new TraditionalRule();
+  private ScoreCalculator scoreCalculator = new ScoreCalculator();
+  private RuleStrategy totalScore = new TraditionalRule();
+  private Card starterCard;
 
   public static void setStatus(String string) { cribbage.setStatusText(string); }
 
@@ -143,14 +146,23 @@ private void initScore() {
 	 for (int i = 0; i < nPlayers; i++) {
 		 scores[i] = 0;
 		 scoreActors[i] = new TextActor("0", Color.WHITE, bgColor, bigFont);
-		 addActor(scoreActors[i], scoreLocations[i]);
+		 addActor(scoreActors[i], scoreLocations[i]); // Parameters (what to draw, location on screen)
 	 }
-  }
+}
 
-private void updateScore(int player) {
+private void updateScore(int player, String phase) {
+	System.out.println("SCORE UPDATED");
 	removeActor(scoreActors[player]);
+	totalScore.getAllScores(phase, hands[player], getStarterCard(), players[player], players[(player+1) % 2]);
+//	if (score != null) {
+//		System.out.println(score.getScore());
+//		scores[player] = score.getScore();
+//		scoreActors[player] = new TextActor(String.valueOf(scores[player]), Color.WHITE, bgColor, bigFont);
+//		addActor(scoreActors[player], scoreLocations[player]);
+//	}
 	scoreActors[player] = new TextActor(String.valueOf(scores[player]), Color.WHITE, bgColor, bigFont);
 	addActor(scoreActors[player], scoreLocations[player]);
+
 }
 
 private void deal(Hand pack, Hand[] hands) {
@@ -216,12 +228,15 @@ private void starter(Hand pack) {
 	starter.setView(this, layout);
 	starter.draw();
 	Card dealt = randomCard(pack);
+	// Starter Card
+	setStarterCard(dealt);
 	dealt.setVerso(false);
 	transfer(dealt, starter);
+//	System.out.println(dealt);
 
 	// Updates scores for dealer
 //	scores[dealer] += ruleStrategy.getScore(starter, "starter");
-	updateScore(dealer);
+	updateScore(dealer, "starter");
 }
 
 int total(Hand hand) {
@@ -260,8 +275,9 @@ private void play() {
 			if (s.go) {
 				// Another "go" after previous one with no intervening cards
 				// lastPlayer gets 1 point for a "go"
+//				int goScore = totalScore.getAllScores("go", players[currentPlayer].getHand(), )
 				scores[currentPlayer] += 1;
-				updateScore(currentPlayer);
+				updateScore(currentPlayer, "go");
 				s.newSegment = true;
 			} else {
 				// currentPlayer says "go"
@@ -274,14 +290,14 @@ private void play() {
 			if (total(s.segment) == thirtyone) {
 				// lastPlayer gets 2 points for a
 				scores[currentPlayer] += 2;
-				updateScore(currentPlayer);
+				updateScore(currentPlayer, "play"); //CHANGE
 				s.newSegment = true;
 				currentPlayer = (currentPlayer+1) % 2;
 			} else {
 				// if total(segment) == 15, lastPlayer gets 2 points for a 15
 				if (total(s.segment) == fifteen) {
 					scores[currentPlayer] += 2;
-					updateScore(currentPlayer);
+					updateScore(currentPlayer, "play"); // CHANGE
 				}
 
 				if (!s.go) { // if it is "go" then same player gets another turn
@@ -296,7 +312,15 @@ private void play() {
 	}
 }
 
-void showHandsCrib() {
+	public Card getStarterCard() {
+		return starterCard;
+	}
+
+	public void setStarterCard(Card starterCard) {
+		this.starterCard = starterCard;
+	}
+
+	void showHandsCrib() {
 	// score player 0 (non dealer)
 //	System.out.println(startingHands[0]);
 
@@ -314,15 +338,13 @@ void showHandsCrib() {
     setStatusText("Initializing...");
     initScore();
 
-	  Hand pack = deck.toHand(false);
+	  Hand pack = deck.toHand(true);
 	  RowLayout layout = new RowLayout(starterLocation, 0);
 	  layout.setRotationAngle(0);
 	  pack.setView(this, layout);
 	  pack.setVerso(true);
 	  pack.draw();
 	  addActor(new TextActor("Seed: " + SEED, Color.BLACK, bgColor, normalFont), seedLocation);
-
-//	  ruleStrategy.setRule(new TraditionalRule());
 
 	  /* Play the round */
 	  deal(pack, hands);

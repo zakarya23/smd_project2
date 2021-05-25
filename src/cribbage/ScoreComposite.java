@@ -8,21 +8,27 @@ public class ScoreComposite implements Score {
 
     public ScoreComposite(String name) {
         this.name = name;
-        this.scores = new ArrayList<Score>();
+        this.scores = new ArrayList<>();
     }
 
 
     @Override
     public int getScore() {
         int score = 0;
-        for (Score item: scores) {
-            score += item.getScore();
+        if (scores.size() > 0) {
+            for (Score item : scores) {
+                if (item != null) {
+                    score += item.getScore();
+                }
+            }
         }
         return score;
     }
 
     public void add(Score score) {
         scores.add(score);
+        System.out.println("scores");
+        System.out.println(scores);
     }
 
     public void remove(int index) {

@@ -62,6 +62,7 @@ public class TraditionalRule implements RuleStrategy {
             default:
                 // do nothing
         }
+
         current.addScore(score);
     }
 

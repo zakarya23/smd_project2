@@ -33,7 +33,12 @@ public abstract class IPlayer {
     }
 
     public void addScore(Score score) {
-        this.score.add(score);
+        if (score != null) {
+            System.out.print("SCORE");
+            System.out.println(score);
+            System.out.println(score);
+            this.score.add(score);
+        }
     }
     public int getScore() {
         return this.score.getScore();
