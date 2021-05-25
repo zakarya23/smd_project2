@@ -130,7 +130,6 @@ public class Cribbage extends CardGame {
   private Hand starter;
   private Hand crib;
   private RuleStrategy ruleStrategy = new TraditionalRule();
-  private ScoreCalculator scoreCalculator = new ScoreCalculator();
 
   public static void setStatus(String string) { cribbage.setStatusText(string); }
 

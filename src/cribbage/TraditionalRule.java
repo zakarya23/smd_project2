@@ -1,6 +1,7 @@
 package cribbage;
 
 import ch.aplu.jcardgame.Card;
+import ch.aplu.jcardgame.Deck;
 import ch.aplu.jcardgame.Hand;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class TraditionalRule implements RuleStrategy {
         }
     }
     // returns a Score object that comprises all the scoreItems applicable in a given turn
-    public Score getAllScores(String phase, Hand hand, Card starter) {
+    public void getAllScores(String phase, Hand hand, Card starter, IPlayer current, IPlayer other) {
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
             case "starter":
@@ -46,7 +47,11 @@ public class TraditionalRule implements RuleStrategy {
                 break;
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
-                    score.add(getScore(rule, hand, starter));
+                    if (rule == Point.GO) {
+                        other.addScore(getScore(rule, hand, starter));
+                    } else {
+                        score.add(getScore(rule, hand, starter));
+                    }
                 }
                 break;
             case "show":
@@ -57,8 +62,7 @@ public class TraditionalRule implements RuleStrategy {
             default:
                 // do nothing
         }
-
-        return score;
+        current.addScore(score);
     }
 
     // returns a Score object of a specific type if the cards meet the criteria
@@ -113,11 +117,13 @@ public class TraditionalRule implements RuleStrategy {
 
     // returns a fifteen or thirtyone ScoreItem if the values of the card add up to 15 or 31
     public Score getTotals(Point type, Hand hand, Card starter) {
-        if (starter != null) {
+        if (starter != null ) { // then phase == show
             hand.insert(starter, false);
-        }
-        int total = hand.getScore();
+            // get all combinations of 15
 
+        }
+
+        int total = hand.getScore();
         if (total == 15 || total == 31) {
             return new ScoreItem(type.name, type.points, hand.getCardList());
         }
@@ -131,8 +137,14 @@ public class TraditionalRule implements RuleStrategy {
         boolean go = true;
         ArrayList<Card> cards = hand.getCardList();
         for (Card card: cards) {
-            if (card.getValue() + total < 31 );
+            if (card.getValue() + total < 31 ) {
+                go = false; // found playable card
+                break;
+            }
 
+            if (go) {
+                return new ScoreItem(type.name, type.points, hand.getCardList());
+            }
         }
 
         return null;
@@ -230,5 +242,6 @@ public class TraditionalRule implements RuleStrategy {
         return null;
 
     }
+
 
 }

@@ -4,5 +4,5 @@ import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.Hand;
 
 public interface RuleStrategy {
-    public Score getAllScores(String phase, Hand hand, Card starter);
+    public void getAllScores(String phase, Hand hand, Card starter, IPlayer current, IPlayer other);
 }

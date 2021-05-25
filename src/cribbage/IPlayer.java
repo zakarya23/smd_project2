@@ -8,6 +8,7 @@ public abstract class IPlayer {
     int id;
     Deck deck; // Need this since can't get from hand to deck
     Hand hand;
+    ScoreComposite score;
 
     void setId(int id)  {
         this.id = id;
@@ -29,5 +30,12 @@ public abstract class IPlayer {
         Card s = selectToLay();
             hand.insert(unlayable, true);
             return s;
+    }
+
+    public void addScore(Score score) {
+        this.score.add(score);
+    }
+    public int getScore() {
+        return this.score.getScore();
     }
 }
