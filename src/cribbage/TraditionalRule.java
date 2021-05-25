@@ -48,8 +48,10 @@ public class TraditionalRule implements RuleStrategy {
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
                     if (rule == Point.GO) {
+                        System.out.println("GO");
                         other.addScore(getScore(rule, hand, starter));
                     } else {
+                        System.out.println("NOT GO");
                         score.add(getScore(rule, hand, starter));
                     }
                 }

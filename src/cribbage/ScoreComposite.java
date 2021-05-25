@@ -25,6 +25,10 @@ public class ScoreComposite implements Score {
         return score;
     }
 
+    public ArrayList<Score> getScores() {
+        return scores;
+    }
+
     public void add(Score score) {
         scores.add(score);
         System.out.println("scores");

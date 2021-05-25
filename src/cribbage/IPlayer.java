@@ -8,7 +8,7 @@ public abstract class IPlayer {
     int id;
     Deck deck; // Need this since can't get from hand to deck
     Hand hand;
-    ScoreComposite score;
+    ScoreComposite score = new ScoreComposite("player");
 
     void setId(int id)  {
         this.id = id;
@@ -34,13 +34,17 @@ public abstract class IPlayer {
 
     public void addScore(Score score) {
         if (score != null) {
-            System.out.print("SCORE");
-            System.out.println(score);
-            System.out.println(score);
+            System.out.println(this.score);
             this.score.add(score);
         }
     }
     public int getScore() {
-        return this.score.getScore();
+        int total = 0;
+        for (Score score : this.score.getScores()) {
+            total += score.getScore();
+            System.out.print("total" );
+            System.out.println(total);
+        }
+        return total;
     }
 }

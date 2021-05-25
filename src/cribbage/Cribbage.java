@@ -151,16 +151,13 @@ private void initScore() {
 }
 
 private void updateScore(int player, String phase) {
-	System.out.println("SCORE UPDATED");
+	System.out.println("SCORE UPDATED " + phase);
 	removeActor(scoreActors[player]);
 	totalScore.getAllScores(phase, hands[player], getStarterCard(), players[player], players[(player+1) % 2]);
-//	if (score != null) {
-//		System.out.println(score.getScore());
-//		scores[player] = score.getScore();
-//		scoreActors[player] = new TextActor(String.valueOf(scores[player]), Color.WHITE, bgColor, bigFont);
-//		addActor(scoreActors[player], scoreLocations[player]);
-//	}
-	scoreActors[player] = new TextActor(String.valueOf(scores[player]), Color.WHITE, bgColor, bigFont);
+	int score = players[player].getScore();
+	System.out.print("SCORE = ");
+	System.out.println(score);
+	scoreActors[player] = new TextActor(String.valueOf(score), Color.WHITE, bgColor, bigFont);
 	addActor(scoreActors[player], scoreLocations[player]);
 
 }
@@ -277,7 +274,7 @@ private void play() {
 				// lastPlayer gets 1 point for a "go"
 //				int goScore = totalScore.getAllScores("go", players[currentPlayer].getHand(), )
 				scores[currentPlayer] += 1;
-				updateScore(currentPlayer, "go");
+				updateScore(currentPlayer, "play");
 				s.newSegment = true;
 			} else {
 				// currentPlayer says "go"
@@ -322,10 +319,13 @@ private void play() {
 
 	void showHandsCrib() {
 	// score player 0 (non dealer)
-//	System.out.println(startingHands[0]);
-
+	int player1 = 0;
+	int player2 = (player1 + 1) % 2;
+//	System.out.println(startingHands[player1]);
+	updateScore(player1, "show");
 	// score player 1 (dealer)
-//	System.out.println(startingHands[1]);
+//	System.out.println(startingHands[player2]);
+	updateScore(player2, "show");
 
 	// score crib (for dealer)
 }
