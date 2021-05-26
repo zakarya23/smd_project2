@@ -38,21 +38,22 @@ public class TraditionalRule implements RuleStrategy {
     }
     // returns a Score object that comprises all the scoreItems applicable in a given turn
     public Score getAllScores(String phase, Hand hand, Hand starter) {
+        Card starterCard = starter.getCard(0);
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
             case "starter":
                 for (Point rule : Phase.STARTER.rules) {
-                    score.add(getScore(rule, hand, starter));
+                    score.add(getScore(rule, hand, starterCard));
                 }
                 break;
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
-                    score.add(getScore(rule, hand, starter));
+                    score.add(getScore(rule, hand, starterCard));
                 }
                 break;
             case "show":
                 for (Point rule : Phase.SHOW.rules) {
-                    score.add(getScore(rule, hand, starter));
+                    score.add(getScore(rule, hand, starterCard));
                 }
                 break;
             default:
