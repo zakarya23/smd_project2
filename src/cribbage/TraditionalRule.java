@@ -37,7 +37,7 @@ public class TraditionalRule implements RuleStrategy {
         }
     }
     // returns a Score object that comprises all the scoreItems applicable in a given turn
-    public Score getAllScores(String phase, Hand hand, Hand starter) {
+    public ScoreComposite getAllScores(String phase, Hand hand, Hand starter) {
         Card starterCard = starter.getCard(0);
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
@@ -74,9 +74,9 @@ public class TraditionalRule implements RuleStrategy {
             case THIRTYONE:
                 score = getTotals(type, hand, starter);
                 break;
-            case GO:
-                score = getGo(type, hand, starter);
-                break;
+//            case GO:
+//                score = getGo(type, hand, starter);
+//                break;
             case PAIR2:
             case PAIR3:
             case PAIR4:
@@ -130,7 +130,8 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a go ScoreItem if the values of the cards are below 31 but neither player can play another card
-    public Score getGo(Point type, Hand hand, Card starter) {
+    public ScoreItem getGo(Hand hand) {
+        Point type = Point.GO;
         int total = hand.getScore();
         boolean go = true;
         ArrayList<Card> cards = hand.getCardList();

@@ -137,6 +137,10 @@ public class Cribbage extends CardGame {
 	final Font normalFont = new Font("Serif", Font.BOLD, 24);
 	final Font bigFont = new Font("Serif", Font.BOLD, 36);
 
+	// Scoring
+	private TraditionalRule totalScore = new TraditionalRule();
+
+
 	private void initScore() {
 		for (int i = 0; i < nPlayers; i++) {
 			scores[i] = 0;
@@ -151,7 +155,9 @@ public class Cribbage extends CardGame {
 		addActor(scoreActors[player], scoreLocations[player]);
 	}
 
-	private void updateScore(){}
+	private void updateScore(){
+
+	}
 
 	private void deal(Hand pack, Hand[] hands) {
 		for (int i = 0; i < nPlayers; i++) {
@@ -239,9 +245,14 @@ public class Cribbage extends CardGame {
 			if (nextCard == null) {
 				if (s.go) {
 
-					// getGo()
-					// Another "go" after previous one with no intervening cards
-					// lastPlayer gets 1 point for a "go"
+					ScoreItem score = totalScore.getGo(hands[currentPlayer]);
+					if (score != null) {
+						scores[s.lastPlayer] = score.getPoints();
+						updateScoreGraphics(s.lastPlayer);
+						// Another "go" after previous one with no intervening cards
+						// lastPlayer gets 1 point for a "go"
+
+					}
 					s.newSegment = true;
 				} else {
 					// currentPlayer says "go"
@@ -262,6 +273,14 @@ public class Cribbage extends CardGame {
 						currentPlayer = (currentPlayer+1) % 2;
 					}
 				}
+				ScoreComposite score = totalScore.getAllScores("play", s.segment, starter);
+
+				System.out.println("SCORE = ");
+				System.out.println(score.getScore());
+//				for (Score ss : score.getScores()) {
+//					System.out.print("S! = ");
+//					System.out.println(ss.getScore());
+//				}
 			}
 			// Call getallscores() for everything else
 			// output should be read and logged
@@ -358,5 +377,4 @@ public class Cribbage extends CardGame {
 
 		new Cribbage();
 	}
-
 }

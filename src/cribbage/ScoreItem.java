@@ -21,6 +21,10 @@ public class ScoreItem implements Score {
         return points + "," + name + "," + cards.toString();
     }
 
+    public int getPoints() {
+        return points;
+    }
+
     @Override
     public int getScore() {
         return 0;

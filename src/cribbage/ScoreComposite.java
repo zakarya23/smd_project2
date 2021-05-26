@@ -15,12 +15,9 @@ public class ScoreComposite implements Score {
     @Override
     public int getScore() {
         int score = 0;
-        if (scores.size() > 0) {
-            for (Score item : scores) {
-                if (item != null) {
-                    score += item.getScore();
-                }
-            }
+        for (Score s: scores) {
+            System.out.print("+ ");
+            System.out.println(s);
         }
         return score;
     }
@@ -30,9 +27,11 @@ public class ScoreComposite implements Score {
     }
 
     public void add(Score score) {
-        scores.add(score);
-        System.out.println("scores");
-        System.out.println(scores);
+        if (score != null) {
+            scores.add(score);
+            System.out.println("scores");
+            System.out.println(scores);
+        }
     }
     // TRY TO FIX ARRAY
     public void remove(int index) {
