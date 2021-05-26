@@ -1,0 +1,17 @@
+55510
+cribbage.HumanPlayer,P0
+cribbage.RandomPlayer,P1
+deal,P0,[AD,9S,TD,JD,JS,KD]
+deal,P1,[AS,2S,5H,7S,JH,QD]
+discard,P0,[JD,KD]
+discard,P1,[AS,7S]
+starter,3S
+play,P0,9,9S
+play,P1,19,QD
+play,P0,29,TD
+play,P1,31,2S
+play,P0,1,AD
+play,P1,6,5H
+play,P0,16,JS
+play,P1,26,JH
+play,P1,29,3S

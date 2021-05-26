@@ -48,14 +48,14 @@ public class Cribbage extends CardGame {
 		}
 	}
 
-    String canonical(Card c) { return canonical((Rank) c.getRank()) + canonical((Suit) c.getSuit()); }
+	String canonical(Card c) { return canonical((Rank) c.getRank()) + canonical((Suit) c.getSuit()); }
 
-    String canonical(Hand h) {
+	String canonical(Hand h) {
 		Hand h1 = new Hand(deck); // Clone to sort without changing the original hand
 		for (Card C: h.getCardList()) h1.insert(C.getSuit(), C.getRank(), false);
 		h1.sort(Hand.SortType.POINTPRIORITY, false);
 		return "[" + h1.getCardList().stream().map(this::canonical).collect(Collectors.joining(",")) + "]";
-    }
+	}
 
 	class MyCardValues implements Deck.CardValues { // Need to generate a unique value for every card
 		public int[] values(Enum suit) {  // Returns the value for each card in the suit
@@ -66,9 +66,9 @@ public class Cribbage extends CardGame {
 	static Random random;
 
 	public static <T extends Enum<?>> T randomEnum(Class<T> clazz){
-      int x = random.nextInt(clazz.getEnumConstants().length);
-      return clazz.getEnumConstants()[x];
-  }
+		int x = random.nextInt(clazz.getEnumConstants().length);
+		return clazz.getEnumConstants()[x];
+	}
 
 	static boolean ANIMATE;
 
@@ -79,169 +79,139 @@ public class Cribbage extends CardGame {
 			c.removeFromHand(true);
 			h.insert(c, true);
 		}
-  }
-  
-  private void dealingOut(Hand pack, Hand[] hands) {
-	  for (int i = 0; i < nStartCards; i++) {
-		  for (int j=0; j < nPlayers; j++) {
-			  Card dealt = randomCard(pack);
-			  dealt.setVerso(false);  // Show the face
-			  transfer(dealt, hands[j]);
-		  }
-	  }
-  }
+	}
+
+	private void dealingOut(Hand pack, Hand[] hands) {
+		for (int i = 0; i < nStartCards; i++) {
+			for (int j=0; j < nPlayers; j++) {
+				Card dealt = randomCard(pack);
+				dealt.setVerso(false);  // Show the face
+				transfer(dealt, hands[j]);
+			}
+		}
+	}
 
 	static int SEED;
 
 	public static Card randomCard(Hand hand){
-      int x = random.nextInt(hand.getNumberOfCards());
-      return hand.get(x);
-  }
+		int x = random.nextInt(hand.getNumberOfCards());
+		return hand.get(x);
+	}
 
-  private final String version = "0.1";
-  static public final int nPlayers = 2;
-  public final int nStartCards = 6;
-  public final int nDiscards = 2;
-  private final int handWidth = 400;
-  private final int cribWidth = 150;
-  private final int segmentWidth = 180;
-  private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover", new MyCardValues());
-  private final Location[] handLocations = {
-			  new Location(360, 75),
-			  new Location(360, 625)
-	  };
-  private final Location[] scoreLocations = {
-			  new Location(590, 25),
-			  new Location(590, 675)
-	  };
-  private final Location[] segmentLocations = {  // need at most three as 3x31=93 > 2x4x10=80
+	private final String version = "0.1";
+	static public final int nPlayers = 2;
+	public final int nStartCards = 6;
+	public final int nDiscards = 2;
+	private final int handWidth = 400;
+	private final int cribWidth = 150;
+	private final int segmentWidth = 180;
+	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover", new MyCardValues());
+	private final Location[] handLocations = {
+			new Location(360, 75),
+			new Location(360, 625)
+	};
+	private final Location[] scoreLocations = {
+			new Location(590, 25),
+			new Location(590, 675)
+	};
+	private final Location[] segmentLocations = {  // need at most three as 3x31=93 > 2x4x10=80
 			new Location(150, 350),
 			new Location(400, 350),
 			new Location(650, 350)
 	};
-  private final Location starterLocation = new Location(50, 625);
-  private final Location cribLocation = new Location(700, 625);
-  private final Location seedLocation = new Location(5, 25);
-  // private final TargetArea cribTarget = new TargetArea(cribLocation, CardOrientation.NORTH, 1, true);
-  private final Actor[] scoreActors = {null, null}; //, null, null };
-  private final Location textLocation = new Location(350, 450);
-  private final Hand[] hands = new Hand[nPlayers];
-  private Hand[] startingHands = new Hand[nPlayers];
-  private Hand starter;
-  private Hand crib;
-  private RuleStrategy ruleStrategy = new TraditionalRule();
-  private ScoreCalculator scoreCalculator = new ScoreCalculator();
-  private RuleStrategy totalScore = new TraditionalRule();
-  private Card starterCard;
+	private final Location starterLocation = new Location(50, 625);
+	private final Location cribLocation = new Location(700, 625);
+	private final Location seedLocation = new Location(5, 25);
+	// private final TargetArea cribTarget = new TargetArea(cribLocation, CardOrientation.NORTH, 1, true);
+	private final Actor[] scoreActors = {null, null}; //, null, null };
+	private final Location textLocation = new Location(350, 450);
+	private final Hand[] hands = new Hand[nPlayers];
+	private Hand starter;
+	private Hand crib;
 
-  public static void setStatus(String string) { cribbage.setStatusText(string); }
+	public static void setStatus(String string) { cribbage.setStatusText(string); }
 
-static private final IPlayer[] players = new IPlayer[nPlayers];
-private final int[] scores = new int[nPlayers];
+	static private final IPlayer[] players = new IPlayer[nPlayers];
+	private final int[] scores = new int[nPlayers];
 
-final Font normalFont = new Font("Serif", Font.BOLD, 24);
-final Font bigFont = new Font("Serif", Font.BOLD, 36);
+	final Font normalFont = new Font("Serif", Font.BOLD, 24);
+	final Font bigFont = new Font("Serif", Font.BOLD, 36);
 
-private void initScore() {
-	 for (int i = 0; i < nPlayers; i++) {
-		 scores[i] = 0;
-		 scoreActors[i] = new TextActor("0", Color.WHITE, bgColor, bigFont);
-		 addActor(scoreActors[i], scoreLocations[i]); // Parameters (what to draw, location on screen)
-	 }
-}
-
-private void updateScore(int player, String phase) {
-	System.out.println("SCORE UPDATED " + phase);
-	removeActor(scoreActors[player]);
-	totalScore.getAllScores(phase, hands[player], getStarterCard(), players[player], players[(player+1) % 2]);
-	int score = players[player].getScore();
-	System.out.print("SCORE = ");
-	System.out.println(score);
-	scoreActors[player] = new TextActor(String.valueOf(score), Color.WHITE, bgColor, bigFont);
-	addActor(scoreActors[player], scoreLocations[player]);
-}
-
-private void deal(Hand pack, Hand[] hands) {
-	for (int i = 0; i < nPlayers; i++) {
-		hands[i] = new Hand(deck);
-		// players[i] = (1 == i ? new HumanPlayer() : new RandomPlayer());
-		players[i].setId(i);
-		players[i].startSegment(deck, hands[i]);
-	}
-	RowLayout[] layouts = new RowLayout[nPlayers];
-	for (int i = 0; i < nPlayers; i++)
-	{
-		layouts[i] = new RowLayout(handLocations[i], handWidth);
-		layouts[i].setRotationAngle(0);
-		// layouts[i].setStepDelay(10);
-		hands[i].setView(this, layouts[i]);
-		hands[i].draw();
-	}
-	layouts[0].setStepDelay(0);
-
-	dealingOut(pack, hands);
-	for (int i = 0; i < nPlayers; i++) {
-		hands[i].sort(Hand.SortType.POINTPRIORITY, true);
-	}
-	layouts[0].setStepDelay(0);
-}
-
-private void discardToCrib() {
-	crib = new Hand(deck);
-	RowLayout layout = new RowLayout(cribLocation, cribWidth);
-	layout.setRotationAngle(0);
-	crib.setView(this, layout);
-//	 crib.setTargetArea(cribTarget);
-	crib.draw();
-
-	int playerNumber = 0;
-
-	startingHands[0] = new Hand(deck);
-	startingHands[1] = new Hand(deck);
-
-	for (IPlayer player: players) {
-		for (int i = 0; i < nDiscards; i++) {
-			transfer(player.discard(), crib);
+	private void initScore() {
+		for (int i = 0; i < nPlayers; i++) {
+			scores[i] = 0;
+			scoreActors[i] = new TextActor("0", Color.WHITE, bgColor, bigFont);
+			addActor(scoreActors[i], scoreLocations[i]);
 		}
-
-
-		for(int i = 0; i < hands[playerNumber].getNumberOfCards(); i++) {
-			startingHands[playerNumber].getCardList().add(hands[playerNumber].get(i));
-		}
-
-		playerNumber++;
-
-		crib.sort(Hand.SortType.POINTPRIORITY, true);
 	}
-}
 
-private void starter(Hand pack) {
-	final int dealer = 1;
+	private void updateScoreGraphics(int player) {
+		removeActor(scoreActors[player]);
+		scoreActors[player] = new TextActor(String.valueOf(scores[player]), Color.WHITE, bgColor, bigFont);
+		addActor(scoreActors[player], scoreLocations[player]);
+	}
 
-	starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
-	RowLayout layout = new RowLayout(starterLocation, 0);
-	layout.setRotationAngle(0);
-	starter.setView(this, layout);
-	starter.draw();
-	Card dealt = randomCard(pack);
-	// Starter Card
-	setStarterCard(dealt);
-	dealt.setVerso(false);
-	transfer(dealt, starter);
-//	System.out.println(dealt);
+	private void updateScore(){}
 
-	// Updates scores for dealer
-//	scores[dealer] += ruleStrategy.getScore(starter, "starter");
-	updateScore(dealer, "starter");
-}
+	private void deal(Hand pack, Hand[] hands) {
+		for (int i = 0; i < nPlayers; i++) {
+			hands[i] = new Hand(deck);
+			// players[i] = (1 == i ? new HumanPlayer() : new RandomPlayer());
+			players[i].setId(i);
+			players[i].startSegment(deck, hands[i]);
+		}
+		RowLayout[] layouts = new RowLayout[nPlayers];
+		for (int i = 0; i < nPlayers; i++)
+		{
+			layouts[i] = new RowLayout(handLocations[i], handWidth);
+			layouts[i].setRotationAngle(0);
+			// layouts[i].setStepDelay(10);
+			hands[i].setView(this, layouts[i]);
+			hands[i].draw();
+		}
+		layouts[0].setStepDelay(0);
 
-int total(Hand hand) {
-	int total = 0;
-	for (Card c: hand.getCardList()) total += cardValue(c);
-	return total;
-}
+		dealingOut(pack, hands);
+		for (int i = 0; i < nPlayers; i++) {
+			hands[i].sort(Hand.SortType.POINTPRIORITY, true);
+		}
+		layouts[0].setStepDelay(0);
+	}
 
-class Segment {
+	private void discardToCrib() {
+		crib = new Hand(deck);
+		RowLayout layout = new RowLayout(cribLocation, cribWidth);
+		layout.setRotationAngle(0);
+		crib.setView(this, layout);
+		// crib.setTargetArea(cribTarget);
+		crib.draw();
+		for (IPlayer player: players) {
+			for (int i = 0; i < nDiscards; i++) {
+				transfer(player.discard(), crib);
+			}
+			crib.sort(Hand.SortType.POINTPRIORITY, true);
+		}
+	}
+
+	private void starter(Hand pack) {
+		// ("starter", null, starter)
+		starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
+		RowLayout layout = new RowLayout(starterLocation, 0);
+		layout.setRotationAngle(0);
+		starter.setView(this, layout);
+		starter.draw();
+		Card dealt = randomCard(pack);
+		dealt.setVerso(false);
+		transfer(dealt, starter);
+	}
+
+	int total(Hand hand) {
+		int total = 0;
+		for (Card c: hand.getCardList()) total += cardValue(c);
+		return total;
+	}
+
+	class Segment {
 		Hand segment;
 		boolean go;
 		int lastPlayer;
@@ -255,150 +225,138 @@ class Segment {
 			lastPlayer = -1;   // No-one has played a card yet in this segment
 			newSegment = false;  // Not ready for new segment yet
 		}
-}
+	}
 
-private void play() {
-	final int thirtyone = 31;
-	final int fifteen = 15;
-	List<Hand> segments = new ArrayList<>();
-	int currentPlayer = 0; // Player 1 is dealer
-	Segment s = new Segment();
-	s.reset(segments);
-	while (!(players[0].emptyHand() && players[1].emptyHand())) {
-//		 System.out.println("segments.size() = " + segments.size());
-		Card nextCard = players[currentPlayer].lay(thirtyone-total(s.segment));
-		if (nextCard == null) {
-			if (s.go) {
-				// Another "go" after previous one with no intervening cards
-				// lastPlayer gets 1 point for a "go"
-//				int goScore = totalScore.getAllScores("go", players[currentPlayer].getHand(), )
-				scores[currentPlayer] += 1;
-				updateScore(currentPlayer, "play");
-				s.newSegment = true;
-			} else {
-				// currentPlayer says "go"
-				s.go = true;
-			}
-			currentPlayer = (currentPlayer+1) % 2;
-		} else {
-			s.lastPlayer = currentPlayer; // last Player to play a card in this segment
-			transfer(nextCard, s.segment);
-			if (total(s.segment) == thirtyone) {
-				// lastPlayer gets 2 points for a
-				scores[currentPlayer] += 2;
-				updateScore(currentPlayer, "play"); //CHANGE
-				s.newSegment = true;
+	private void play() {
+		final int thirtyone = 31;
+		List<Hand> segments = new ArrayList<>();
+		int currentPlayer = 0; // Player 1 is dealer
+		Segment s = new Segment();
+		s.reset(segments);
+		while (!(players[0].emptyHand() && players[1].emptyHand())) {
+			// System.out.println("segments.size() = " + segments.size());
+			Card nextCard = players[currentPlayer].lay(thirtyone-total(s.segment));
+			if (nextCard == null) {
+				if (s.go) {
+
+					// getGo()
+					// Another "go" after previous one with no intervening cards
+					// lastPlayer gets 1 point for a "go"
+					s.newSegment = true;
+				} else {
+					// currentPlayer says "go"
+					s.go = true;
+				}
 				currentPlayer = (currentPlayer+1) % 2;
 			} else {
-				// if total(segment) == 15, lastPlayer gets 2 points for a 15
-				if (total(s.segment) == fifteen) {
-					scores[currentPlayer] += 2;
-					updateScore(currentPlayer, "play"); // CHANGE
-				}
-
-				if (!s.go) { // if it is "go" then same player gets another turn
+				s.lastPlayer = currentPlayer; // last Player to play a card in this segment
+				transfer(nextCard, s.segment);
+				if (total(s.segment) == thirtyone) {
+//					("play", s.segment, null)
+					// lastPlayer gets 2 points for a 31
+					s.newSegment = true;
 					currentPlayer = (currentPlayer+1) % 2;
+				} else {
+					// if total(segment) == 15, lastPlayer gets 2 points for a 15
+					if (!s.go) { // if it is "go" then same player gets another turn
+						currentPlayer = (currentPlayer+1) % 2;
+					}
 				}
 			}
-		}
-		if (s.newSegment) {
-			segments.add(s.segment);
-			s.reset(segments);
-		}
-	}
-}
+			// Call getallscores() for everything else
+			// output should be read and logged
+			// Using getScore()
 
-	public Card getStarterCard() {
-		return starterCard;
-	}
-
-	public void setStarterCard(Card starterCard) {
-		this.starterCard = starterCard;
+			if (s.newSegment) {
+				segments.add(s.segment);
+				s.reset(segments);
+			}
+		}
 	}
 
 	void showHandsCrib() {
-	// score player 0 (non dealer)
-	int player1 = 0;
-	int player2 = (player1 + 1) % 2;
-//	System.out.println(startingHands[player1]);
-	updateScore(player1, "show");
-	// score player 1 (dealer)
-//	System.out.println(startingHands[player2]);
-	updateScore(player2, "show");
+		// score player 0 (non dealer)
+		// ("show", hands[0], starter)
 
-	// score crib (for dealer)
-}
+		// score player 1 (dealer)
+		// ("show", hands[1], starter)
 
-  public Cribbage()
-  {
-    super(850, 700, 30);
-    cribbage = this;
-    setTitle("Cribbage (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
-    setStatusText("Initializing...");
-    initScore();
+		// score crib (for dealer)
+		// ("show", crib, starter)
 
-	  Hand pack = deck.toHand(true);
-	  RowLayout layout = new RowLayout(starterLocation, 0);
-	  layout.setRotationAngle(0);
-	  pack.setView(this, layout);
-	  pack.setVerso(true);
-	  pack.draw();
-	  addActor(new TextActor("Seed: " + SEED, Color.BLACK, bgColor, normalFont), seedLocation);
+		// all points that come out of show go to dealer!
+	}
 
-	  /* Play the round */
-	  deal(pack, hands);
-	  discardToCrib();
-	  starter(pack);
-	  play();
-	  showHandsCrib();
+	public Cribbage()
+	{
+		super(850, 700, 30);
+		cribbage = this;
+		setTitle("Cribbage (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
+		setStatusText("Initializing...");
+		initScore();
 
-    addActor(new Actor("sprites/gameover.gif"), textLocation);
-    setStatusText("Game over.");
-    refresh();
-  }
+		Hand pack = deck.toHand(true);
+		RowLayout layout = new RowLayout(starterLocation, 0);
+		layout.setRotationAngle(0);
+		pack.setView(this, layout);
+		pack.setVerso(true);
+		pack.draw();
+		addActor(new TextActor("Seed: " + SEED, Color.BLACK, bgColor, normalFont), seedLocation);
 
-  public static void main(String[] args)
-		  throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
-		  	InstantiationException, IllegalAccessException {
-	  /* Handle Properties */
-	  // System.out.println("Working Directory = " + System.getProperty("user.dir"));
-	  Properties cribbageProperties = new Properties();
-	  // Default properties
-	  cribbageProperties.setProperty("Animate", "true");
-	  cribbageProperties.setProperty("Player0", "cribbage.RandomPlayer");
-	  cribbageProperties.setProperty("Player1", "cribbage.HumanPlayer");
+		/* Play the round */
+		deal(pack, hands);
+		discardToCrib();
+		starter(pack);
+		play();
+		showHandsCrib();
 
-	  // Read properties
-	  try (FileReader inStream = new FileReader("cribbage.properties")) {
-		  cribbageProperties.load(inStream);
-	  }
+		addActor(new Actor("sprites/gameover.gif"), textLocation);
+		setStatusText("Game over.");
+		refresh();
+	}
 
-	  // Control Graphics
-	  ANIMATE = Boolean.parseBoolean(cribbageProperties.getProperty("Animate"));
+	public static void main(String[] args)
+			throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+			InstantiationException, IllegalAccessException {
+		/* Handle Properties */
+		// System.out.println("Working Directory = " + System.getProperty("user.dir"));
+		Properties cribbageProperties = new Properties();
+		// Default properties
+		cribbageProperties.setProperty("Animate", "true");
+		cribbageProperties.setProperty("Player0", "cribbage.RandomPlayer");
+		cribbageProperties.setProperty("Player1", "cribbage.HumanPlayer");
 
-	  // Control Randomisation
-	  /* Read the first argument and save it as a seed if it exists */
-	  if (args.length > 0 ) { // Use arg seed - overrides property
-		  SEED = Integer.parseInt(args[0]);
-	  } else { // No arg
-		  String seedProp = cribbageProperties.getProperty("Seed");  //Seed property
-		  if (seedProp != null) { // Use property seed
-			  SEED = Integer.parseInt(seedProp);
-		  } else { // and no property
-			  SEED = new Random().nextInt(); // so randomise
-		  }
-	  }
-	  random = new Random(SEED);
+		// Read properties
+		try (FileReader inStream = new FileReader("cribbage.properties")) {
+			cribbageProperties.load(inStream);
+		}
 
-	  // Control Player Types
-	  Class<?> clazz;
-	  clazz = Class.forName(cribbageProperties.getProperty("Player0"));
-	  players[0] = (IPlayer) clazz.getConstructor().newInstance();
-	  clazz = Class.forName(cribbageProperties.getProperty("Player1"));
-	  players[1] = (IPlayer) clazz.getConstructor().newInstance();
-	  // End properties
+		// Control Graphics
+		ANIMATE = Boolean.parseBoolean(cribbageProperties.getProperty("Animate"));
 
-	  new Cribbage();
-  }
+		// Control Randomisation
+		/* Read the first argument and save it as a seed if it exists */
+		if (args.length > 0 ) { // Use arg seed - overrides property
+			SEED = Integer.parseInt(args[0]);
+		} else { // No arg
+			String seedProp = cribbageProperties.getProperty("Seed");  //Seed property
+			if (seedProp != null) { // Use property seed
+				SEED = Integer.parseInt(seedProp);
+			} else { // and no property
+				SEED = new Random().nextInt(); // so randomise
+			}
+		}
+		random = new Random(SEED);
+
+		// Control Player Types
+		Class<?> clazz;
+		clazz = Class.forName(cribbageProperties.getProperty("Player0"));
+		players[0] = (IPlayer) clazz.getConstructor().newInstance();
+		clazz = Class.forName(cribbageProperties.getProperty("Player1"));
+		players[1] = (IPlayer) clazz.getConstructor().newInstance();
+		// End properties
+
+		new Cribbage();
+	}
 
 }
