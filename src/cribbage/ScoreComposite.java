@@ -34,7 +34,7 @@ public class ScoreComposite implements Score {
         System.out.println("scores");
         System.out.println(scores);
     }
-
+    // TRY TO FIX ARRAY
     public void remove(int index) {
         scores.remove(index);
     }

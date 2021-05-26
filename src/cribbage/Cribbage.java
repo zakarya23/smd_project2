@@ -159,7 +159,6 @@ private void updateScore(int player, String phase) {
 	System.out.println(score);
 	scoreActors[player] = new TextActor(String.valueOf(score), Color.WHITE, bgColor, bigFont);
 	addActor(scoreActors[player], scoreLocations[player]);
-
 }
 
 private void deal(Hand pack, Hand[] hands) {

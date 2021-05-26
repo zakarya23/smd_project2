@@ -38,12 +38,15 @@ public abstract class IPlayer {
             this.score.add(score);
         }
     }
+    // LOOK BELOW AND FIX FORMATTING 
     public int getScore() {
         int total = 0;
+        System.out.print("SCORED = ");
+        System.out.println(this.score.getScores());
         for (Score score : this.score.getScores()) {
             total += score.getScore();
-            System.out.print("total" );
-            System.out.println(total);
+//            System.out.print("total" );
+//            System.out.println(total);
         }
         return total;
     }

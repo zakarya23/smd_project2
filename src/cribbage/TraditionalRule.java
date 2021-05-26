@@ -44,6 +44,7 @@ public class TraditionalRule implements RuleStrategy {
                 for (Point rule : Phase.STARTER.rules) {
                     score.add(getScore(rule, hand, starter));
                 }
+                current.addScore(score);
                 break;
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
@@ -53,6 +54,7 @@ public class TraditionalRule implements RuleStrategy {
                     } else {
                         System.out.println("NOT GO");
                         score.add(getScore(rule, hand, starter));
+                        current.addScore(score);
                     }
                 }
                 break;
@@ -60,12 +62,13 @@ public class TraditionalRule implements RuleStrategy {
                 for (Point rule : Phase.SHOW.rules) {
                     score.add(getScore(rule, hand, starter));
                 }
+                current.addScore(score);
                 break;
             default:
                 // do nothing
         }
 
-        current.addScore(score);
+//        current.addScore(score);
     }
 
     // returns a Score object of a specific type if the cards meet the criteria
