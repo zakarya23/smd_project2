@@ -133,6 +133,8 @@ public class Cribbage extends CardGame {
   private ScoreCalculator scoreCalculator = new ScoreCalculator();
   private RuleStrategy totalScore = new TraditionalRule();
   private Card starterCard;
+  private String logFileName = "cribbage.log";
+  private File file = File.getInstance();
 
   public static void setStatus(String string) { cribbage.setStatusText(string); }
 
@@ -183,11 +185,15 @@ private void deal(Hand pack, Hand[] hands) {
 	dealingOut(pack, hands);
 	for (int i = 0; i < nPlayers; i++) {
 		hands[i].sort(Hand.SortType.POINTPRIORITY, true);
+		// Adds the deal card event into the log.
+		String eventText = "deal,P" + i + "," + canonical(hands[i]) +'\n';
+		file.append(logFileName,eventText);
 	}
 	layouts[0].setStepDelay(0);
 }
 
 private void discardToCrib() {
+	String event = "discard";
 	crib = new Hand(deck);
 	RowLayout layout = new RowLayout(cribLocation, cribWidth);
 	layout.setRotationAngle(0);
@@ -195,28 +201,24 @@ private void discardToCrib() {
 //	 crib.setTargetArea(cribTarget);
 	crib.draw();
 
-	int playerNumber = 0;
-
-	startingHands[0] = new Hand(deck);
-	startingHands[1] = new Hand(deck);
-
 	for (IPlayer player: players) {
+		String eventText = event + ',' + 'P' + player.id + ',';
+		Hand discardedCards = new Hand(deck);
+
 		for (int i = 0; i < nDiscards; i++) {
 			transfer(player.discard(), crib);
+			discardedCards.getCardList().add(crib.getLast().clone());
 		}
-
-
-		for(int i = 0; i < hands[playerNumber].getNumberOfCards(); i++) {
-			startingHands[playerNumber].getCardList().add(hands[playerNumber].get(i));
-		}
-
-		playerNumber++;
-
 		crib.sort(Hand.SortType.POINTPRIORITY, true);
+
+		eventText += canonical(discardedCards) + '\n';
+
+		file.append(logFileName,eventText);
 	}
 }
 
 private void starter(Hand pack) {
+	String event = "starter";
 	final int dealer = 1;
 
 	starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
@@ -229,7 +231,10 @@ private void starter(Hand pack) {
 	setStarterCard(dealt);
 	dealt.setVerso(false);
 	transfer(dealt, starter);
-//	System.out.println(dealt);
+
+	String eventMessage = event + ',' + canonical(starter.getFirst()) + '\n';
+
+	file.append(logFileName,eventMessage);
 
 	// Updates scores for dealer
 //	scores[dealer] += ruleStrategy.getScore(starter, "starter");
@@ -259,6 +264,8 @@ class Segment {
 }
 
 private void play() {
+	String playEvent = "play";
+	String scoreEvent = "score";
 	final int thirtyone = 31;
 	final int fifteen = 15;
 	List<Hand> segments = new ArrayList<>();
@@ -267,6 +274,11 @@ private void play() {
 	s.reset(segments);
 	while (!(players[0].emptyHand() && players[1].emptyHand())) {
 //		 System.out.println("segments.size() = " + segments.size());
+		String playerRepresentation = "P" + players[currentPlayer].id;
+
+		String playEventMessage = playEvent + ',' + playerRepresentation + ',';
+		String scoreEventMessage = scoreEvent + ',' + playerRepresentation + ',';
+
 		Card nextCard = players[currentPlayer].lay(thirtyone-total(s.segment));
 		if (nextCard == null) {
 			if (s.go) {
@@ -284,10 +296,19 @@ private void play() {
 		} else {
 			s.lastPlayer = currentPlayer; // last Player to play a card in this segment
 			transfer(nextCard, s.segment);
+
+			// Stores card played in the log file.
+			playEventMessage += (total(s.segment) + "," + canonical(nextCard) + '\n');
+
+			file.append(logFileName,playEventMessage);
+
 			if (total(s.segment) == thirtyone) {
 				// lastPlayer gets 2 points for a
 				scores[currentPlayer] += 2;
 				updateScore(currentPlayer, "play"); //CHANGE
+
+				scoreEventMessage += (scores[currentPlayer] + "," + "thirtyone");
+
 				s.newSegment = true;
 				currentPlayer = (currentPlayer+1) % 2;
 			} else {
@@ -295,6 +316,8 @@ private void play() {
 				if (total(s.segment) == fifteen) {
 					scores[currentPlayer] += 2;
 					updateScore(currentPlayer, "play"); // CHANGE
+
+					scoreEventMessage += (scores[currentPlayer] + "," + "fifteen");
 				}
 
 				if (!s.go) { // if it is "go" then same player gets another turn
@@ -398,6 +421,15 @@ private void play() {
 	  clazz = Class.forName(cribbageProperties.getProperty("Player1"));
 	  players[1] = (IPlayer) clazz.getConstructor().newInstance();
 	  // End properties
+
+	  String gameProperties = SEED + "\n" +
+			  				  cribbageProperties.getProperty("Player0") + ",P0\n" +
+			  				  cribbageProperties.getProperty("Player1") + ",P1\n";
+
+	  File file = File.getInstance();
+
+	  file.clear("cribbage.log");
+	  file.append("cribbage.log",gameProperties);
 
 	  new Cribbage();
   }
