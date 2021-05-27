@@ -250,7 +250,11 @@ public class TraditionalRule implements RuleStrategy {
             }
         }
 
-        return scoreComposite;
+        if (scoreComposite.isEmpty()) {
+            return null;
+        } else {
+            return scoreComposite;
+        }
     }
 
     // returns a flushes Score for any flushes in a given hand
@@ -277,7 +281,11 @@ public class TraditionalRule implements RuleStrategy {
             }
         }
 
-        return scoreComposite;
+        if (scoreComposite.isEmpty()) {
+            return null;
+        } else {
+            return scoreComposite;
+        }
     }
 
     //returns a jack Score if a given card has a Jack with the same suit as the starter card.
