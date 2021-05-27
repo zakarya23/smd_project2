@@ -242,12 +242,13 @@ public class Cribbage extends CardGame {
 		Card dealt = randomCard(pack);
 		dealt.setVerso(false);
 		transfer(dealt, starter);
-		Score score = totalScore.getAllScores("starter", null, starter);
-		if (score.getScore() > 0) {
+		ScoreItem score = (ScoreItem) totalScore.getStarter(null, dealt);
+		if (score != null) {
 			System.out.print("STARTER ");
+			scores[1] = score.getPoints();
+			updateScoreGraphics(1);
 			System.out.println(score.getScore());
 		}
-
 
 		String eventMessage = event + ',' + canonical(starter.getFirst()) + '\n';
 		file.append(logFileName,eventMessage);

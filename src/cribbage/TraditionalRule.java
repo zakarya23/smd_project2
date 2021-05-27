@@ -75,9 +75,9 @@ public class TraditionalRule implements RuleStrategy {
     public Score getScore(Point type, Hand hand, Card starter) {
         Score score = null;
         switch (type) {
-            case STARTER:
-                score = getStarter(type, hand, starter);
-                break;
+//            case STARTER:
+//                score = getStarter(type, hand, starter);
+//                break;
             case FIFTEEN:
             case THIRTYONE:
                 score = getTotals(type, hand, starter);
@@ -112,7 +112,8 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a starter ScoreItem if the starter card is a Jack
-    public Score getStarter(Point type, Hand hand, Card starter) {
+    public Score getStarter(Hand hand, Card starter) {
+        Point type = Point.STARTER;
         if (starter.getRank().equals(Cribbage.Rank.JACK)) {
             ArrayList<Card> cards = new ArrayList<Card>();
             cards.add(starter);

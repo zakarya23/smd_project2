@@ -1,11 +1,8 @@
 seed,1248
 cribbage.HumanPlayer,P0
 cribbage.HumanPlayer,P1
-deal,P0,[AH,2C,3D,6D,JC,JH]
-deal,P1,[3S,6H,8H,JD,QS,KH]
-discard,P0,[3D,6D]
-discard,P1,[QS,KH]
-starter,AS
-play,P0,10,JH
-play,P1,13,3S
-play,P0,23,JC
+deal,P0,[5D,9H,TD,JD,KC,KD]
+deal,P1,[3C,4C,4D,6H,7D,KS]
+discard,P0,[JD,KC]
+discard,P1,[6H,KS]
+starter,JH
