@@ -27,6 +27,7 @@ public class ScoreItem implements Score {
 
     @Override
     public int getScore() {
+        System.out.println("CALLED HERE");
         return 0;
     }
 }

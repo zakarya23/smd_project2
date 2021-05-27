@@ -14,10 +14,11 @@ public class ScoreComposite implements Score {
 
     @Override
     public int getScore() {
+        System.out.println("POP");
         int score = 0;
         for (Score s: scores) {
             System.out.print("+ ");
-            System.out.println(s);
+            System.out.println(s.getScore());
         }
         return score;
     }
@@ -29,7 +30,7 @@ public class ScoreComposite implements Score {
     public void add(Score score) {
         if (score != null) {
             scores.add(score);
-            System.out.println("scores");
+            System.out.println(score.getClass());
             System.out.println(scores);
         }
     }

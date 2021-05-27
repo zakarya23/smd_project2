@@ -59,7 +59,6 @@ public class TraditionalRule implements RuleStrategy {
             default:
                 // do nothing
         }
-
         return score;
     }
 

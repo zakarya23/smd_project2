@@ -275,8 +275,22 @@ public class Cribbage extends CardGame {
 				}
 				ScoreComposite score = totalScore.getAllScores("play", s.segment, starter);
 
-				System.out.println("SCORE = ");
-				System.out.println(score.getScore());
+//				System.out.println("SCORE = ");
+//				System.out.println(score);
+				System.out.println("A");
+//				System.out.println(score.getScores());
+				for (Score ss: score.getScores()) {
+					System.out.println(ss.getClass().getName());
+					String type = ss.getClass().getName();
+					switch (type) {
+						case "cribbage.ScoreComposite":
+							System.out.println("SC");
+							System.out.println(ss.getScore());
+							break;
+					}
+
+
+				}
 //				for (Score ss : score.getScores()) {
 //					System.out.print("S! = ");
 //					System.out.println(ss.getScore());
