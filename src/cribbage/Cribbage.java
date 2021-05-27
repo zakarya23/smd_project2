@@ -273,9 +273,9 @@ public class Cribbage extends CardGame {
 						currentPlayer = (currentPlayer+1) % 2;
 					}
 				}
-				ScoreComposite score = totalScore.getAllScores("play", s.segment, starter);
+				ScoreComposite score = totalScore.getAllScores("play", s.segment, null);
 
-				System.out.println("SCORE = ");
+				System.out.print("SCORE = ");
 				System.out.println(score.getScore());
 //				for (Score ss : score.getScores()) {
 //					System.out.print("S! = ");

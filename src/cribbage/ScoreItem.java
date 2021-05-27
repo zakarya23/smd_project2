@@ -15,10 +15,14 @@ public class ScoreItem implements Score {
         this.cards = cards;
     }
 
-
     @Override
     public String toString() {
         return points + "," + name + "," + cards.toString();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     public int getPoints() {

@@ -38,7 +38,10 @@ public class TraditionalRule implements RuleStrategy {
     }
     // returns a Score object that comprises all the scoreItems applicable in a given turn
     public ScoreComposite getAllScores(String phase, Hand hand, Hand starter) {
-        Card starterCard = starter.getCard(0);
+        Card starterCard = null;
+        if (starter != null) {
+            starterCard = starter.getCard(0);
+        }
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
             case "starter":
@@ -113,7 +116,7 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
-    // returns a fifteen or thirtyone ScoreItem if the values of the card add up to 15 or 31
+    // returns a fifteen or thirty-one ScoreItem if the values of the card add up to 15 or 31
     public Score getTotals(Point type, Hand hand, Card starter) {
         if (starter != null ) { // then phase == show
             hand.insert(starter, false);
@@ -174,10 +177,14 @@ public class TraditionalRule implements RuleStrategy {
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
         for (Hand pair : pairs) {
+            System.out.println(pair.toString());
             scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
         }
-
-        return scoreComposite;
+        if (scoreComposite.isEmpty()) {
+            return null;
+        } else {
+            return scoreComposite;
+        }
     }
 
     // returns a runs Score for any runs in a given hand

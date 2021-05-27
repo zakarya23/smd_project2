@@ -11,13 +11,12 @@ public class ScoreComposite implements Score {
         this.scores = new ArrayList<>();
     }
 
-
     @Override
     public int getScore() {
         int score = 0;
         for (Score s: scores) {
             System.out.print("+ ");
-            System.out.println(s);
+            System.out.println(s.getScore());
         }
         return score;
     }
@@ -36,5 +35,22 @@ public class ScoreComposite implements Score {
     // TRY TO FIX ARRAY
     public void remove(int index) {
         scores.remove(index);
+    }
+
+    public boolean isEmpty() {
+        return scores.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "ScoreComposite{" +
+                "name='" + name + '\'' +
+                ", scores=" + scores +
+                '}';
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }
