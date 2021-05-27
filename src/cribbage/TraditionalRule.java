@@ -5,6 +5,7 @@ import ch.aplu.jcardgame.Deck;
 import ch.aplu.jcardgame.Hand;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TraditionalRule implements RuleStrategy {
 
@@ -128,9 +129,11 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
-    public int total(Card[] cards) {
+    public int totalValue(Card[] cards) {
         int total = 0;
-        for (Card c: cards) total += Cribbage.cardValue(c);
+        for(Card c: cards) {
+            total += Cribbage.cardValue(c);
+        }
         return total;
     }
 
@@ -138,14 +141,23 @@ public class TraditionalRule implements RuleStrategy {
     public Score getTotals(Point type, Hand hand, Card starter) {
         if (starter != null ) { // then phase == show
             hand.insert(starter, false);
+            ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
             // get all combinations of 15
             ArrayList<Card[]> combos = getCombinations(hand.getCardList());
             for(Card[] combo: combos) {
-                if (type.equals(Point.FIFTEEN) && total(combo) == 15)  {
-                    return new ScoreItem(type.name, type.points, hand.getCardList());
+
+                System.out.println("combos:" + totalValue(combo) );
+                for(Card c: combo) {
+                    System.out.print(c.toString()+", ");
+                }
+
+                if (type.equals(Point.FIFTEEN) && totalValue(combo) == 15)  {
+                    ArrayList<Card> cards = new ArrayList<Card>(Arrays.asList(combo));
+                    scoreComposite.add(new ScoreItem(type.name, type.points, cards));
                 }
             }
+            return scoreComposite;
         }
 
         int total = Cribbage.total(hand);
@@ -177,64 +189,6 @@ public class TraditionalRule implements RuleStrategy {
         }
         return null;
     }
-
-    // returns a Pair Score for any pairs in a given hand
-//    public Score getPairs(Point type, Hand hand, Card starter) {
-//        if (starter != null) {
-//            hand.insert(starter, false);
-//        }
-//        Hand[] pairs = null;
-//
-//        int num = 0;
-//        switch (type) {
-//            case PAIR2:
-//                num = 2;
-//                break;
-//            case PAIR3:
-//                num = 3;
-//                break;
-//            case PAIR4:
-//                num = 4;
-//                break;
-//        }
-//
-//        Hand h = new Hand(deck);
-//        for (Card C: hand.getCardList()) h.insert(C.getSuit(), C.getRank(), false); // clone hand
-//
-//        // get subset of hand with 2, 3 or 4 cards.
-//        int index = 0;
-//        while (h.getNumberOfCards() > num) {
-//            h.remove(index, false);
-//        }
-//
-//        switch (type) {
-//            case PAIR2:
-//                pairs = h.extractPairs();
-//                break;
-//            case PAIR3:
-//                pairs = h.extractTrips();
-//                break;
-//            case PAIR4:
-//                pairs = h.extractQuads();
-//                break;
-//        }
-//        for (Hand pair : pairs) {
-//            if (pair.isEmpty()) {
-//                return null;
-//            }
-//        }
-//
-//        ScoreComposite scoreComposite = new ScoreComposite(type.name);
-//        for (Hand pair : pairs) {
-//            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
-//        }
-//
-//        if (scoreComposite.isEmpty()) {
-//            return null;
-//        } else {
-//            return scoreComposite;
-//        }
-//    }
 
     public Score getPairs(Point type, Hand hand, Card starter) {
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
@@ -403,11 +357,12 @@ public class TraditionalRule implements RuleStrategy {
     public ArrayList<Card[]> getCombinations(ArrayList<Card> arr)  {
         ArrayList<Card[]> combos = new ArrayList<Card[]>();
         for (int r = 2; r<=5;r++) {
-            Card[] tmp = new Card[r];
+
             switch (r) {
                 case 2:
                     for (int i=0; i<5; i++) {
                         for (int j=i+1; j<5; j++) {
+                            Card[] tmp = new Card[r];
                             tmp[0] = arr.get(i);
                             tmp[1] = arr.get(j);
                             combos.add(tmp);
@@ -418,6 +373,7 @@ public class TraditionalRule implements RuleStrategy {
                     for (int i=0; i<5; i++) {
                         for (int j=i+1; j<5; j++) {
                             for (int k=j+1; k<5; k++) {
+                                Card[] tmp = new Card[r];
                                 tmp[0] = arr.get(i);
                                 tmp[1] = arr.get(j);
                                 tmp[2] = arr.get(k);
@@ -431,6 +387,7 @@ public class TraditionalRule implements RuleStrategy {
                         for (int j=i+1; j<5; j++) {
                             for (int k=j+1; k<5; k++) {
                                 for (int l=k+1; l<5; l++) {
+                                    Card[] tmp = new Card[r];
                                     tmp[0] = arr.get(i);
                                     tmp[1] = arr.get(j);
                                     tmp[2] = arr.get(k);
@@ -442,6 +399,7 @@ public class TraditionalRule implements RuleStrategy {
                     }
                     break;
                 case 5:
+                    Card[] tmp = new Card[r];
                     tmp[0] = arr.get(0);
                     tmp[1] = arr.get(1);
                     tmp[2] = arr.get(2);
