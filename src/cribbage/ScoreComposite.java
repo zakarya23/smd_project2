@@ -15,8 +15,11 @@ public class ScoreComposite implements Score {
     public int getScore() {
         int score = 0;
         for (Score s: scores) {
-            System.out.print("+ ");
-            System.out.println(s.getScore());
+
+//            System.out.print(s.getName());
+//            System.out.print("+ ");
+
+            score += s.getScore();
         }
         return score;
     }
@@ -28,8 +31,8 @@ public class ScoreComposite implements Score {
     public void add(Score score) {
         if (score != null) {
             scores.add(score);
-            System.out.println("scores");
-            System.out.println(scores);
+//            System.out.println("scores");
+//            System.out.println(scores);
         }
     }
     // TRY TO FIX ARRAY
@@ -41,6 +44,11 @@ public class ScoreComposite implements Score {
         return scores.isEmpty();
     }
 
+    public String getName() {
+        return name;
+    }
+
+
     @Override
     public String toString() {
         return "ScoreComposite{" +
@@ -49,8 +57,10 @@ public class ScoreComposite implements Score {
                 '}';
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public void printNames() {
+        for (Score s: scores) {
+            System.out.print(s.toString());
+            System.out.print(",");
+        }
     }
 }

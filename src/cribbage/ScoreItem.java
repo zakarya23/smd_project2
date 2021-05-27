@@ -17,7 +17,7 @@ public class ScoreItem implements Score {
 
     @Override
     public String toString() {
-        return points + "," + name + "," + cards.toString();
+        return name + "," + cards.toString();
     }
 
     @Override
@@ -31,6 +31,6 @@ public class ScoreItem implements Score {
 
     @Override
     public int getScore() {
-        return 0;
+        return points;
     }
 }

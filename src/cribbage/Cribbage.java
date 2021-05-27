@@ -211,7 +211,7 @@ public class Cribbage extends CardGame {
 		transfer(dealt, starter);
 	}
 
-	int total(Hand hand) {
+	static int total(Hand hand) {
 		int total = 0;
 		for (Card c: hand.getCardList()) total += cardValue(c);
 		return total;
@@ -277,6 +277,11 @@ public class Cribbage extends CardGame {
 
 				System.out.print("SCORE = ");
 				System.out.println(score.getScore());
+				System.out.print("scores found: ");
+				score.printNames();
+				System.out.println();
+				score = null;
+
 //				for (Score ss : score.getScores()) {
 //					System.out.print("S! = ");
 //					System.out.println(ss.getScore());

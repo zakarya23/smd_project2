@@ -124,8 +124,12 @@ public class TraditionalRule implements RuleStrategy {
 
         }
 
-        int total = hand.getScore();
-        if (total == 15 || total == 31) {
+        int total = Cribbage.total(hand);
+        if (type.equals(Point.FIFTEEN) && total == 15)  {
+            return new ScoreItem(type.name, type.points, hand.getCardList());
+        }
+
+        if (type.equals(Point.THIRTYONE) && total == 31) {
             return new ScoreItem(type.name, type.points, hand.getCardList());
         }
 
@@ -135,7 +139,7 @@ public class TraditionalRule implements RuleStrategy {
     // returns a go ScoreItem if the values of the cards are below 31 but neither player can play another card
     public ScoreItem getGo(Hand hand) {
         Point type = Point.GO;
-        int total = hand.getScore();
+        int total = Cribbage.total(hand);
         boolean go = true;
         ArrayList<Card> cards = hand.getCardList();
         for (Card card: cards) {
@@ -177,7 +181,6 @@ public class TraditionalRule implements RuleStrategy {
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
         for (Hand pair : pairs) {
-            System.out.println(pair.toString());
             scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
         }
         if (scoreComposite.isEmpty()) {
