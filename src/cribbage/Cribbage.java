@@ -138,7 +138,7 @@ public class Cribbage extends CardGame {
 	final Font bigFont = new Font("Serif", Font.BOLD, 36);
 
 	// Scoring
-	private TraditionalRule totalScore = new TraditionalRule();
+	private TraditionalRule totalScore = new TraditionalRule(deck);
 
 
 	private void initScore() {
@@ -209,9 +209,14 @@ public class Cribbage extends CardGame {
 		Card dealt = randomCard(pack);
 		dealt.setVerso(false);
 		transfer(dealt, starter);
+		Score score = totalScore.getAllScores("starter", null, starter);
+		if (score.getScore() > 0) {
+			System.out.print("STARTER ");
+			System.out.println(score.getScore());
+		}
 	}
 
-	int total(Hand hand) {
+	static int total(Hand hand) {
 		int total = 0;
 		for (Card c: hand.getCardList()) total += cardValue(c);
 		return total;
@@ -273,28 +278,16 @@ public class Cribbage extends CardGame {
 						currentPlayer = (currentPlayer+1) % 2;
 					}
 				}
-				ScoreComposite score = totalScore.getAllScores("play", s.segment, starter);
-
-//				System.out.println("SCORE = ");
-//				System.out.println(score);
+				ScoreComposite score = totalScore.getAllScores("play", s.segment, null);
 				System.out.println("A");
-//				System.out.println(score.getScores());
-				for (Score ss: score.getScores()) {
-					System.out.println(ss.getClass().getName());
-					String type = ss.getClass().getName();
-					switch (type) {
-						case "cribbage.ScoreComposite":
-							System.out.println("SC");
-							System.out.println(ss.getScore());
-							break;
-					}
-
-
+				System.out.println(score);
+				if (score.getScore() > 0) {
+					System.out.print("SCORE = ");
+					System.out.println(score.getScore());
+					score.printNames();
+					System.out.println();
 				}
-//				for (Score ss : score.getScores()) {
-//					System.out.print("S! = ");
-//					System.out.println(ss.getScore());
-//				}
+
 			}
 			// Call getallscores() for everything else
 			// output should be read and logged

@@ -15,10 +15,14 @@ public class ScoreItem implements Score {
         this.cards = cards;
     }
 
-
     @Override
     public String toString() {
-        return points + "," + name + "," + cards.toString();
+        return name + "," + cards.toString();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     public int getPoints() {
@@ -28,6 +32,6 @@ public class ScoreItem implements Score {
     @Override
     public int getScore() {
         System.out.println("CALLED HERE");
-        return 0;
+        return points;
     }
 }

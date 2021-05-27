@@ -11,7 +11,6 @@ public class ScoreComposite implements Score {
         this.scores = new ArrayList<>();
     }
 
-
     @Override
     public int getScore() {
         System.out.println("POP");
@@ -19,6 +18,7 @@ public class ScoreComposite implements Score {
         for (Score s: scores) {
             System.out.print("+ ");
             System.out.println(s.getScore());
+            score += s.getScore();
         }
         return score;
     }
@@ -32,10 +32,36 @@ public class ScoreComposite implements Score {
             scores.add(score);
             System.out.println(score.getClass());
             System.out.println(scores);
+//            System.out.println("scores");
+//            System.out.println(scores);
         }
     }
     // TRY TO FIX ARRAY
     public void remove(int index) {
         scores.remove(index);
+    }
+
+    public boolean isEmpty() {
+        return scores.isEmpty();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    @Override
+    public String toString() {
+        return "ScoreComposite{" +
+                "name='" + name + '\'' +
+                ", scores=" + scores +
+                '}';
+    }
+
+    public void printNames() {
+        for (Score s: scores) {
+            System.out.print(s.toString());
+            System.out.print(",");
+        }
     }
 }
