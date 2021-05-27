@@ -59,6 +59,7 @@ public class TraditionalRule implements RuleStrategy {
                 break;
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
+                    // Unable to check for pairs once a pair is found
                     if((!pairFound && rule.name.contains("pair"))) {
                         score.add(getScore(rule, hand, starterCard));
                     }
