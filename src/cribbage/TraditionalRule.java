@@ -178,21 +178,25 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a go ScoreItem if the values of the cards are below 31 but neither player can play another card
-    public ScoreItem getGo(Hand hand) {
-        Point type = Point.GO;
-        int total = Cribbage.total(hand);
-        boolean go = true;
-        ArrayList<Card> cards = hand.getCardList();
-        for (Card card: cards) {
-            if (card.getValue() + total < 31 ) {
-                go = false; // found playable card
-                break;
-            }
-            if (go) {
-                return new ScoreItem(type.name, type.points, hand.getCardList());
-            }
-        }
-        return null;
+//    public ScoreItem getGo(Hand hand) {
+//        Point type = Point.GO;
+//        int total = Cribbage.total(hand);
+//        boolean go = true;
+//        ArrayList<Card> cards = hand.getCardList();
+//        for (Card card: cards) {
+//            if (card.getValue() + total < 31 ) {
+//                go = false; // found playable card
+//                break;
+//            }
+//            if (go) {
+//                return new ScoreItem(type.name, type.points, hand.getCardList());
+//            }
+//        }
+//        return null;
+//    }
+
+    public ScoreItem getGoScore(Hand hand) {
+        return new ScoreItem(Point.GO.name, Point.GO.points, hand.getCardList());
     }
 
     public Score getPairs(Point type, Hand hand, Card starter) {

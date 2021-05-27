@@ -300,7 +300,7 @@ public class Cribbage extends CardGame {
 			if (nextCard == null) {
 				if (s.go) {
 
-					ScoreItem score = totalScore.getGo(hands[currentPlayer]);
+					ScoreItem score = totalScore.getGoScore(hands[s.lastPlayer]);
 
 					if (score != null) {
 						scores[s.lastPlayer] += score.getPoints();
@@ -337,12 +337,10 @@ public class Cribbage extends CardGame {
 					// if total(segment) == 15, lastPlayer gets 2 points for a 15
 					ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
 
-					updateOnCardPlayed(scoresApplicable,s);
+					updateOnCardPlayed(scoresApplicable, s);
 
 					if (!s.go) { // if it is "go" then same player gets another turn
-						currentPlayer = (currentPlayer+1) % 2;
-					} else {
-
+						currentPlayer = (currentPlayer + 1) % 2;
 					}
 				}
 			}
