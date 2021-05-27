@@ -147,11 +147,6 @@ public class TraditionalRule implements RuleStrategy {
             ArrayList<Card[]> combos = getCombinations(hand.getCardList());
             for(Card[] combo: combos) {
 
-                System.out.println("combos:" + totalValue(combo) );
-                for(Card c: combo) {
-                    System.out.print(c.toString()+", ");
-                }
-
                 if (type.equals(Point.FIFTEEN) && totalValue(combo) == 15)  {
                     ArrayList<Card> cards = new ArrayList<Card>(Arrays.asList(combo));
                     scoreComposite.add(new ScoreItem(type.name, type.points, cards));
@@ -313,23 +308,33 @@ public class TraditionalRule implements RuleStrategy {
         int num;
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
-
-        for (Cribbage.Suit suit : Cribbage.Suit.values()) {
-            num = hand.getNumberOfCardsWithSuit(suit);
-            if (num == 4) {
-                scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+        switch(type) {
+            case FLUSH4:
+                hand.insert(starter, false);
+                for (Cribbage.Suit suit : Cribbage.Suit.values()) {
+                    num = hand.getNumberOfCardsWithSuit(suit);
+                    if (num > 4) {
+                        return null;
+                    }
+                }
+                hand.remove(starter, false);
+                for (Cribbage.Suit suit : Cribbage.Suit.values()) {
+                    num = hand.getNumberOfCardsWithSuit(suit);
+                    if (num == 4) {
+                        scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+                        return scoreComposite;                    }
+                }
                 break;
-            }
-        }
-
-        hand.insert(starter, false);
-
-        for (Cribbage.Suit suit : Cribbage.Suit.values()) {
-            num = hand.getNumberOfCardsWithSuit(suit);
-            if (num == 5) {
-                scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+            case FLUSH5:
+                hand.insert(starter, false);
+                for (Cribbage.Suit suit : Cribbage.Suit.values()) {
+                    num = hand.getNumberOfCardsWithSuit(suit);
+                    if (num == 5) {
+                        scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
+                        return scoreComposite;
+                    }
+                }
                 break;
-            }
         }
 
         if (scoreComposite.isEmpty()) {
@@ -354,6 +359,7 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
+    // Returns an arraylist of all combinations of a set of 5 cards
     public ArrayList<Card[]> getCombinations(ArrayList<Card> arr)  {
         ArrayList<Card[]> combos = new ArrayList<Card[]>();
         for (int r = 2; r<=5;r++) {
