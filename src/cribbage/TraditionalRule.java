@@ -116,12 +116,24 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
+    public int total(Card[] cards) {
+        int total = 0;
+        for (Card c: cards) total += Cribbage.cardValue(c);
+        return total;
+    }
+
     // returns a fifteen or thirty-one ScoreItem if the values of the card add up to 15 or 31
     public Score getTotals(Point type, Hand hand, Card starter) {
         if (starter != null ) { // then phase == show
             hand.insert(starter, false);
-            // get all combinations of 15
 
+            // get all combinations of 15
+            ArrayList<Card[]> combos = getCombinations(hand.getCardList());
+            for(Card[] combo: combos) {
+                if (type.equals(Point.FIFTEEN) && total(combo) == 15)  {
+                    return new ScoreItem(type.name, type.points, hand.getCardList());
+                }
+            }
         }
 
         int total = Cribbage.total(hand);
@@ -250,6 +262,61 @@ public class TraditionalRule implements RuleStrategy {
         }
         return null;
 
+    }
+
+    public ArrayList<Card[]> getCombinations(ArrayList<Card> arr)  {
+        ArrayList<Card[]> combos = new ArrayList<Card[]>();
+        for (int r = 2; r<=5;r++) {
+            Card[] tmp = new Card[r];
+            switch (r) {
+                case 2:
+                    for (int i=0; i<5; i++) {
+                        for (int j=i+1; j<5; j++) {
+                            tmp[0] = arr.get(i);
+                            tmp[1] = arr.get(j);
+                            combos.add(tmp);
+                        }
+                    }
+                    break;
+                case 3:
+                    for (int i=0; i<5; i++) {
+                        for (int j=i+1; j<5; j++) {
+                            for (int k=j+1; k<5; k++) {
+                                tmp[0] = arr.get(i);
+                                tmp[1] = arr.get(j);
+                                tmp[2] = arr.get(k);
+                                combos.add(tmp);
+                            }
+                        }
+                    }
+                    break;
+                case 4:
+                    for (int i=0; i<5; i++) {
+                        for (int j=i+1; j<5; j++) {
+                            for (int k=j+1; k<5; k++) {
+                                for (int l=k+1; l<5; l++) {
+                                    tmp[0] = arr.get(i);
+                                    tmp[1] = arr.get(j);
+                                    tmp[2] = arr.get(k);
+                                    tmp[3] = arr.get(l);
+                                    combos.add(tmp);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 5:
+                    tmp[0] = arr.get(0);
+                    tmp[1] = arr.get(1);
+                    tmp[2] = arr.get(2);
+                    tmp[3] = arr.get(3);
+                    tmp[4] = arr.get(4);
+                    combos.add(tmp);
+                    break;
+            }
+//            System.out.println(combos.size());
+        }
+        return combos;
     }
 
 
