@@ -10,7 +10,9 @@ import java.util.Arrays;
 public class TraditionalRule implements RuleStrategy {
 
     private Deck deck;
+
     private boolean pairFound = false;
+    private boolean runFound = false;
 
     public TraditionalRule(Deck deck) {
         this.deck = deck;
@@ -18,7 +20,7 @@ public class TraditionalRule implements RuleStrategy {
 
     public enum Point {
         STARTER("starter", 2),
-        PAIR2("pair2", 2), PAIR3("pair3", 6), PAIR4("pair", 12),
+        PAIR2("pair2", 2), PAIR3("pair3", 6), PAIR4("pair4", 12),
         RUN3("run3", 3), RUN4("run4", 4), RUN5("run5", 5), RUN6("run6", 6), RUN7("run7", 7),
         FIFTEEN("fifteen", 2), THIRTYONE("thirtyone", 2), GO("go", 1),
         FLUSH4("flush4", 4), FLUSH5("flush5", 5),
@@ -35,7 +37,7 @@ public class TraditionalRule implements RuleStrategy {
 
     public enum Phase {
         STARTER(new Point[]{Point.STARTER}),
-        PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR4, Point.PAIR3, Point.PAIR2}),
+        PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN7, Point.RUN6, Point.RUN5, Point.RUN4, Point.RUN3, Point.PAIR4, Point.PAIR3, Point.PAIR2}),
         SHOW(new Point[]{Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK});
 
         public final Point[] rules;
@@ -61,7 +63,7 @@ public class TraditionalRule implements RuleStrategy {
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
                     // Unable to check for pairs once a pair is found
-                    if((!pairFound && rule.name.contains("pair"))) {
+                    if((!pairFound && rule.name.contains("pair")) || (!runFound && rule.name.contains("run"))) {
                         score.add(getScore(rule, hand, starterCard));
                     }
                 }
@@ -76,6 +78,8 @@ public class TraditionalRule implements RuleStrategy {
         }
 
         pairFound = false;
+        runFound = false;
+
         return score;
     }
 
@@ -83,9 +87,9 @@ public class TraditionalRule implements RuleStrategy {
     public Score getScore(Point type, Hand hand, Card starter) {
         Score score = null;
         switch (type) {
-            case STARTER:
-                score = getStarter(type, hand, starter);
-                break;
+//            case STARTER:
+//                score = getStarter(type, hand, starter);
+//                break;
             case FIFTEEN:
             case THIRTYONE:
                 score = getTotals(type, hand, starter);
@@ -280,27 +284,47 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
-    // returns a runs Score for any runs in a given hand
     public Score getRuns(Point type, Hand hand, Card starter) {
-        if (starter != null) {
-            hand.insert(starter, false);
+        if(starter != null) {
+            // Need to work on the show
+        } else {
+            switch (type) {
+                case RUN7:
+                    return runAlgorithm(type,hand,7);
+                case RUN6:
+                    return runAlgorithm(type,hand,6);
+                case RUN5:
+                    return runAlgorithm(type,hand,5);
+                case RUN4:
+                    return runAlgorithm(type,hand,4);
+                case RUN3:
+                    return runAlgorithm(type,hand,3);
+            }
         }
+        return null;
+    }
 
-        Hand[] runs = hand.extractSequences(type.points);
+    private Score runAlgorithm(Point type, Hand hand, int runLength) {
+        Hand[] runs;
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
-        if (runs.length == 0) {
+        // Checks if hand has length longer or equal to the run length
+        if (hand.getNumberOfCards() < runLength) {
             return null;
         }
 
-        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+        Hand cardToCheck = new Hand(deck);
 
-        for (Hand run : runs) {
-            if (run.contains( hand.getLast() ) && starter == null) { // this is a new run
-                scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
-            }
+        // Adds the last runLength cards to be checked in the hand to a temporary hand.
+        cardToCheck.getCardList().addAll(hand.getCardList().subList(hand.getNumberOfCards() - runLength, hand.getNumberOfCards()));
+        // Checks if the sublist contains a run
+        if ((runs = cardToCheck.extractSequences(runLength)).length == 0) {
+            return null;
+        } else {
+            scoreComposite.add(new ScoreItem(type.name, type.points, runs[0].getCardList()));
+            runFound = true;
+            return scoreComposite;
         }
-
-        return scoreComposite;
     }
 
     // returns a flushes Score for any flushes in a given hand

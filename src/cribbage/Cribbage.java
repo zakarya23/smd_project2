@@ -546,7 +546,7 @@ public class Cribbage extends CardGame {
 		setStatusText("Initializing...");
 		initScore();
 
-		Hand pack = deck.toHand(true);
+		Hand pack = deck.toHand(false);
 		RowLayout layout = new RowLayout(starterLocation, 0);
 		layout.setRotationAngle(0);
 		pack.setView(this, layout);
