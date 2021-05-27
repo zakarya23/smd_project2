@@ -138,7 +138,7 @@ public class Cribbage extends CardGame {
 	final Font bigFont = new Font("Serif", Font.BOLD, 36);
 
 	// Scoring
-	private TraditionalRule totalScore = new TraditionalRule();
+	private TraditionalRule totalScore = new TraditionalRule(deck);
 
 
 	private void initScore() {

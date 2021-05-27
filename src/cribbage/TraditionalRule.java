@@ -8,9 +8,15 @@ import java.util.ArrayList;
 
 public class TraditionalRule implements RuleStrategy {
 
+    private Deck deck;
+
+    public TraditionalRule(Deck deck) {
+        this.deck = deck;
+    }
+
     public enum Point {
         STARTER("starter", 2),
-        PAIR2("pair2", 2), PAIR3("pair3", 3), PAIR4("pair", 4),
+        PAIR2("pair2", 2), PAIR3("pair3", 6), PAIR4("pair", 12),
         RUN3("run3", 3), RUN4("run4", 4), RUN5("run5", 5), RUN6("run6", 6), RUN7("run7", 7),
         FIFTEEN("fifteen", 2), THIRTYONE("thirtyone", 2), GO("go", 1),
         FLUSH4("flush4", 4), FLUSH5("flush5", 5),
@@ -173,29 +179,50 @@ public class TraditionalRule implements RuleStrategy {
         }
         Hand[] pairs = null;
 
+        int num = 0;
         switch (type) {
             case PAIR2:
-                pairs = hand.extractPairs();
+                num = 2;
                 break;
             case PAIR3:
-                pairs = hand.extractTrips();
+                num = 3;
                 break;
             case PAIR4:
-                pairs = hand.extractQuads();
+                num = 4;
                 break;
         }
 
-        if (pairs == null) {
-            return null;
+        Hand h = new Hand(deck);
+        for (Card C: hand.getCardList()) h.insert(C.getSuit(), C.getRank(), false); // clone hand
+
+        // get subset of hand with 2, 3 or 4 cards.
+        int index = 0;
+        while (h.getNumberOfCards() > num) {
+            h.remove(index, false);
+        }
+
+        switch (type) {
+            case PAIR2:
+                pairs = h.extractPairs();
+                break;
+            case PAIR3:
+                pairs = h.extractTrips();
+                break;
+            case PAIR4:
+                pairs = h.extractQuads();
+                break;
+        }
+        for (Hand pair : pairs) {
+            if (pair.isEmpty()) {
+                return null;
+            }
         }
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
         for (Hand pair : pairs) {
-
-            if ( pair.contains( hand.getLast() ) && starter == null) { // this is a new pair
-                scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
-            }
+            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
         }
+
         if (scoreComposite.isEmpty()) {
             return null;
         } else {
