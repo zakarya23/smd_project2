@@ -159,12 +159,10 @@ public class TraditionalRule implements RuleStrategy {
                 go = false; // found playable card
                 break;
             }
-
             if (go) {
                 return new ScoreItem(type.name, type.points, hand.getCardList());
             }
         }
-
         return null;
     }
 
@@ -193,7 +191,10 @@ public class TraditionalRule implements RuleStrategy {
 
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
         for (Hand pair : pairs) {
-            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
+
+            if ( pair.contains( hand.getLast() ) && starter == null) { // this is a new pair
+                scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
+            }
         }
         if (scoreComposite.isEmpty()) {
             return null;
@@ -217,7 +218,9 @@ public class TraditionalRule implements RuleStrategy {
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
         for (Hand run : runs) {
-            scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
+            if (run.contains( hand.getLast() ) && starter == null) { // this is a new run
+                scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
+            }
         }
 
         return scoreComposite;
