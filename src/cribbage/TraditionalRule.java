@@ -46,7 +46,7 @@ public class TraditionalRule implements RuleStrategy {
     public ScoreComposite getAllScores(String phase, Hand hand, Hand starter) {
         Card starterCard = null;
         if (starter != null) {
-            starterCard = starter.getCard(0);
+            starterCard = starter.getFirst();
         }
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
