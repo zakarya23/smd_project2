@@ -231,8 +231,7 @@ public class Cribbage extends CardGame {
 
 	private void starter(Hand pack) {
 		String event = "starter";
-
-		// ("starter", null, starter)
+		int dealer = 1;
 
 		starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
 		RowLayout layout = new RowLayout(starterLocation, 0);
@@ -242,16 +241,20 @@ public class Cribbage extends CardGame {
 		Card dealt = randomCard(pack);
 		dealt.setVerso(false);
 		transfer(dealt, starter);
-//		ScoreItem score = (ScoreItem) totalScore.getStarter(null,dealt);
-//		if (score != null) {
-//			System.out.print("STARTER ");
-//			scores[1] = score.getPoints();
-//			updateScoreGraphics(1);
-//			System.out.println(score.getScore());
-//		}
 
 		String eventMessage = event + ',' + canonical(starter.getFirst()) + '\n';
 		file.append(logFileName,eventMessage);
+
+		// Checks if starter has score.
+		ScoreItem starterScore = (ScoreItem) totalScore.getStarter(starter);
+
+		if(starterScore != null) {
+			scores[dealer] += starterScore.getScore();
+			updateScoreGraphics(dealer);
+
+			String scoreMessage = "score,P1," + scores[dealer] + ',' + starterScore.getScore() + ',' + canonical(starter) + '\n';
+			file.append(logFileName,scoreMessage);
+		}
 	}
 
 	static int total(Hand hand) {
@@ -296,51 +299,15 @@ public class Cribbage extends CardGame {
 			Card nextCard = players[currentPlayer].lay(thirtyone-total(s.segment));
 			if (nextCard == null) {
 				if (s.go) {
-//					ScoreItem goScore = totalScore.getGo(s.segment);
-//
-//					scores[s.lastPlayer] = goScore.getPoints();
-//					updateScoreGraphics(s.lastPlayer);
-
 
 					ScoreItem score = totalScore.getGo(hands[currentPlayer]);
 
 					if (score != null) {
-						scores[s.lastPlayer] = score.getPoints();
+						scores[s.lastPlayer] += score.getPoints();
 						updateScoreGraphics(s.lastPlayer);
 
 						String message = scoreEventMessage + scores[s.lastPlayer] + ',' + score.getScore() + ",go\n";
 						file.append(logFileName,message);
-
-						ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
-
-						Iterator scoreIterator = scoresApplicable.getScores().iterator();
-
-						while(scoreIterator.hasNext()) {
-							Score currentScore = (Score) scoreIterator.next();
-
-							String scoreType = currentScore.getClass().getName();
-
-							switch(scoreType) {
-								case "cribbage.ScoreItem":
-									ScoreItem scoreItem = (ScoreItem) currentScore;
-									scores[s.lastPlayer] += scoreItem.getScore();
-									updateScoreGraphics(s.lastPlayer);
-									message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + ((ScoreItem) currentScore).getName() + '\n';
-									file.append(logFileName, message);
-									break;
-								case "cribbage.ScoreComposite":
-									ScoreComposite scoreComposite = (ScoreComposite) currentScore;
-									Iterator scoreCompositeIterator = scoreComposite.getScores().iterator();
-
-									while(scoreCompositeIterator.hasNext()) {
-										scoreItem = (ScoreItem) scoreCompositeIterator.next();
-										scores[s.lastPlayer] += scoreItem.getScore();
-										updateScoreGraphics(s.lastPlayer);
-										message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + '\n';
-										file.append(logFileName, message);
-									}
-							}
-						}
 
 						// Another "go" after previous one with no intervening cards
 						// lastPlayer gets 1 point for a "go"
@@ -362,34 +329,7 @@ public class Cribbage extends CardGame {
 					// lastPlayer gets 2 points for a 31
 					ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
 
-					Iterator scoreIterator = scoresApplicable.getScores().iterator();
-
-					while(scoreIterator.hasNext()) {
-						Score currentScore = (Score) scoreIterator.next();
-
-						String scoreType = currentScore.getClass().getName();
-
-						switch(scoreType) {
-							case "cribbage.ScoreItem":
-								ScoreItem scoreItem = (ScoreItem) currentScore;
-								scores[s.lastPlayer] += scoreItem.getScore();
-								updateScoreGraphics(s.lastPlayer);
-								String message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + ((ScoreItem) currentScore).getName() + '\n';
-								file.append(logFileName, message);
-								break;
-							case "cribbage.ScoreComposite":
-								ScoreComposite scoreComposite = (ScoreComposite) currentScore;
-								Iterator scoreCompositeIterator = scoreComposite.getScores().iterator();
-
-								while(scoreCompositeIterator.hasNext()) {
-									scoreItem = (ScoreItem) scoreCompositeIterator.next();
-									scores[s.lastPlayer] += scoreItem.getScore();
-									updateScoreGraphics(s.lastPlayer);
-									message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + '\n';
-									file.append(logFileName, message);
-								}
-						}
-					}
+					updateOnCardPlayed(scoresApplicable,s);
 
 					s.newSegment = true;
 					currentPlayer = (currentPlayer+1) % 2;
@@ -397,62 +337,15 @@ public class Cribbage extends CardGame {
 					// if total(segment) == 15, lastPlayer gets 2 points for a 15
 					ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
 
-					Iterator scoreIterator = scoresApplicable.getScores().iterator();
-
-					while(scoreIterator.hasNext()) {
-						Score currentScore = (Score) scoreIterator.next();
-
-						String scoreType = currentScore.getClass().getName();
-
-						switch(scoreType) {
-							case "cribbage.ScoreItem":
-								ScoreItem scoreItem = (ScoreItem) currentScore;
-								scores[s.lastPlayer] += scoreItem.getScore();
-								updateScoreGraphics(s.lastPlayer);
-								String message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + ((ScoreItem) currentScore).getName() + '\n';
-								file.append(logFileName, message);
-								break;
-							case "cribbage.ScoreComposite":
-								ScoreComposite scoreComposite = (ScoreComposite) currentScore;
-								Iterator scoreCompositeIterator = scoreComposite.getScores().iterator();
-
-								while(scoreCompositeIterator.hasNext()) {
-									scoreItem = (ScoreItem) scoreCompositeIterator.next();
-									scores[s.lastPlayer] += scoreItem.getScore();
-									updateScoreGraphics(s.lastPlayer);
-									message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + '\n';
-									file.append(logFileName, message);
-								}
-						}
-					}
+					updateOnCardPlayed(scoresApplicable,s);
 
 					if (!s.go) { // if it is "go" then same player gets another turn
 						currentPlayer = (currentPlayer+1) % 2;
+					} else {
+
 					}
 				}
-//				ScoreComposite score = totalScore.getAllScores("play", s.segment, null);
-//				System.out.println("A");
-//				System.out.println(score);
-//				if (score.getScore() > 0) {
-//					System.out.print("SCORE = ");
-//					System.out.println(score.getScore());
-//					score.printNames();
-//					System.out.println();
-//				}
-
-//				if (score.getScore() > 0) {
-//					System.out.print("SCORE = ");
-//					System.out.println(score.getScore());
-//					score.printNames();
-//					System.out.println();
-//				}
-
 			}
-			// Call getallscores() for everything else
-			// output should be read and logged
-			// Using getScore()
-
-//			System.out.println(s.segment.toString() + '\n');
 
 			if (s.newSegment) {
 				segments.add(s.segment);
@@ -490,15 +383,20 @@ public class Cribbage extends CardGame {
 
 						while (scoreCompositeIterator.hasNext()) {
 							ScoreItem scoreItem = (ScoreItem) scoreCompositeIterator.next();
-							scores[0] += scoreItem.getScore();
-							updateScoreGraphics(0);
-							String message = scoreEventMessage + ",P" + i + "," + this.scores[0] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + '\n';
-							System.out.println(message);
+							scores[i] += scoreItem.getScore();
+							updateScoreGraphics(i);
+							Hand temp = new Hand(deck);
+
+							temp.getCardList().addAll(scoreItem.getCards());
+
+							String message = scoreEventMessage + "P" + i + "," + this.scores[i] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + ',' + canonical(temp) + '\n';
+//							System.out.println(message);
 							file.append(logFileName, message);
 						}
 				}
 			}
 		}
+
 		// score crib (for dealer)
 		String showMessage = event + ",P1," + canonical(starter.getFirst()) + '+' + canonical(crib) + '\n';
 		file.append(logFileName,showMessage);
@@ -522,8 +420,8 @@ public class Cribbage extends CardGame {
 
 					while(scoreCompositeIterator.hasNext()) {
 						ScoreItem scoreItem = (ScoreItem) scoreCompositeIterator.next();
-						scores[0] += scoreItem.getScore();
-						updateScoreGraphics(0);
+						scores[1] += scoreItem.getScore();
+						updateScoreGraphics(1);
 						Hand temp = new Hand(deck);
 
 						temp.getCardList().addAll(scoreItem.getCards());
@@ -536,6 +434,48 @@ public class Cribbage extends CardGame {
 		}
 
 		// all points that come out of show go to dealer!
+	}
+
+	void updateOnCardPlayed(ScoreComposite scoresApplicable, Segment s) {
+		String playerRepresentation = "P" + players[s.lastPlayer].id;
+		String scoreEventMessage = "score" + ',' + playerRepresentation + ',';
+
+		Iterator scoreIterator = scoresApplicable.getScores().iterator();
+
+		while(scoreIterator.hasNext()) {
+			Score currentScore = (Score) scoreIterator.next();
+
+			String scoreType = currentScore.getClass().getName();
+
+			switch(scoreType) {
+				case "cribbage.ScoreItem":
+					ScoreItem scoreItem = (ScoreItem) currentScore;
+					scores[s.lastPlayer] += scoreItem.getScore();
+
+					updateScoreGraphics(s.lastPlayer);
+
+					String message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + ((ScoreItem) currentScore).getName() + '\n';
+					file.append(logFileName, message);
+					break;
+				case "cribbage.ScoreComposite":
+					ScoreComposite scoreComposite = (ScoreComposite) currentScore;
+					Iterator scoreCompositeIterator = scoreComposite.getScores().iterator();
+
+					while(scoreCompositeIterator.hasNext()) {
+						scoreItem = (ScoreItem) scoreCompositeIterator.next();
+						scores[s.lastPlayer] += scoreItem.getScore();
+
+						updateScoreGraphics(s.lastPlayer);
+
+						Hand scoreCondition = new Hand(deck);
+						scoreCondition.getCardList().addAll(scoreItem.getCards());
+
+						message = scoreEventMessage + this.scores[s.lastPlayer] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + ',' + canonical(scoreCondition)+ '\n';
+						file.append(logFileName, message);
+					}
+					break;
+			}
+		}
 	}
 
 	public Cribbage()

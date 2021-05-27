@@ -38,7 +38,7 @@ public class TraditionalRule implements RuleStrategy {
     public enum Phase {
         STARTER(new Point[]{Point.STARTER}),
         PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN7, Point.RUN6, Point.RUN5, Point.RUN4, Point.RUN3, Point.PAIR4, Point.PAIR3, Point.PAIR2}),
-        SHOW(new Point[]{Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK});
+        SHOW(new Point[]{Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH5, Point.FLUSH4, Point.JACK});
 
         public final Point[] rules;
 
@@ -63,7 +63,9 @@ public class TraditionalRule implements RuleStrategy {
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
                     // Unable to check for pairs once a pair is found
-                    if((!pairFound && rule.name.contains("pair")) || (!runFound && rule.name.contains("run"))) {
+                    if(!rule.name.contains("pair") && !rule.name.contains("run")) {
+                        score.add(getScore(rule, hand, starterCard));
+                    } else if((!pairFound && rule.name.contains("pair")) || (!runFound && rule.name.contains("run"))) {
                         score.add(getScore(rule, hand, starterCard));
                     }
                 }
@@ -88,7 +90,7 @@ public class TraditionalRule implements RuleStrategy {
         Score score = null;
         switch (type) {
 //            case STARTER:
-//                score = getStarter(type, hand, starter);
+//                score = getStarter(hand, starter);
 //                break;
             case FIFTEEN:
             case THIRTYONE:
@@ -124,12 +126,13 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a starter ScoreItem if the starter card is a Jack
-    public Score getStarter(Point type, Hand hand, Card starter) {
-        if (starter.getRank().equals(Cribbage.Rank.JACK)) {
+    public Score getStarter(Hand starter) {
+        if(starter.getFirst().getRank().equals(Cribbage.Rank.JACK)) {
             ArrayList<Card> cards = new ArrayList<Card>();
-            cards.add(starter);
-            return new ScoreItem(type.name, type.points, cards);
+            cards.add(starter.getFirst());
+            return new ScoreItem(Point.STARTER.name, Point.STARTER.points, cards);
         }
+
         return null;
     }
 
@@ -156,10 +159,13 @@ public class TraditionalRule implements RuleStrategy {
                     scoreComposite.add(new ScoreItem(type.name, type.points, cards));
                 }
             }
+
             return scoreComposite;
         }
 
         int total = Cribbage.total(hand);
+
+
         if (type.equals(Point.FIFTEEN) && total == 15)  {
             return new ScoreItem(type.name, type.points, hand.getCardList());
         }
@@ -213,6 +219,7 @@ public class TraditionalRule implements RuleStrategy {
         }
 
         for (Hand pair : pairs) {
+            System.out.println(pair);
             scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
         }
 
@@ -225,6 +232,8 @@ public class TraditionalRule implements RuleStrategy {
             Hand result = new Hand(deck);
 
             int counter = 1;
+
+            result.insert(lastCard,false);
 
             // Checks for pair from the last card in the hand.
             for(int numOfCards = hand.getNumberOfCards() - 1; numOfCards > 0; numOfCards--) {
@@ -287,6 +296,36 @@ public class TraditionalRule implements RuleStrategy {
     public Score getRuns(Point type, Hand hand, Card starter) {
         if(starter != null) {
             // Need to work on the show
+            hand.insert(starter,false);
+
+            ScoreComposite scoreComposite = new ScoreComposite(type.name);
+
+            Hand[] runs = null;
+
+            switch (type) {
+                case RUN5:
+                    runs = hand.extractSequences(5);
+                    break;
+                case RUN4:
+                    runs = hand.extractSequences(4);
+                    break;
+                case RUN3:
+                    runs = hand.extractSequences(3);
+                    break;
+                default:
+                    break;
+            }
+
+            // adds a new score to the score composite for every run found.
+            for(Hand run: runs) {
+                scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
+            }
+
+            if(scoreComposite.isEmpty()) {
+                return null;
+            }
+
+            return scoreComposite;
         } else {
             switch (type) {
                 case RUN7:
@@ -346,7 +385,10 @@ public class TraditionalRule implements RuleStrategy {
                     num = hand.getNumberOfCardsWithSuit(suit);
                     if (num == 4) {
                         scoreComposite.add(new ScoreItem(type.name, type.points, hand.getCardList()));
-                        return scoreComposite;                    }
+                        Hand asd = new Hand(deck);
+                        asd.getCardList().addAll(((ScoreItem)scoreComposite.getScores().get(0)).getCards());
+                        return scoreComposite;
+                    }
                 }
                 break;
             case FLUSH5:
@@ -442,6 +484,4 @@ public class TraditionalRule implements RuleStrategy {
         }
         return combos;
     }
-
-
 }
