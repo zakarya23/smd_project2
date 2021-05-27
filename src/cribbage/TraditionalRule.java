@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class TraditionalRule implements RuleStrategy {
 
     private Deck deck;
+    private boolean pairFound = false;
 
     public TraditionalRule(Deck deck) {
         this.deck = deck;
@@ -33,7 +34,7 @@ public class TraditionalRule implements RuleStrategy {
 
     public enum Phase {
         STARTER(new Point[]{Point.STARTER}),
-        PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR2, Point.PAIR3, Point.PAIR4}),
+        PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN3, Point.RUN4, Point.RUN5, Point.RUN6, Point.RUN7, Point.PAIR4, Point.PAIR3, Point.PAIR2}),
         SHOW(new Point[]{Point.FIFTEEN, Point.RUN3, Point.RUN4, Point.RUN5, Point.PAIR2, Point.PAIR3, Point.PAIR4, Point.FLUSH4, Point.FLUSH5, Point.JACK});
 
         public final Point[] rules;
@@ -48,6 +49,7 @@ public class TraditionalRule implements RuleStrategy {
         if (starter != null) {
             starterCard = starter.getFirst();
         }
+
         ScoreComposite score = new ScoreComposite(phase);
         switch (phase) {
             case "starter":
@@ -57,7 +59,9 @@ public class TraditionalRule implements RuleStrategy {
                 break;
             case "play":
                 for (Point rule : Phase.PLAY.rules) {
-                    score.add(getScore(rule, hand, starterCard));
+                    if((!pairFound && rule.name.contains("pair"))) {
+                        score.add(getScore(rule, hand, starterCard));
+                    }
                 }
                 break;
             case "show":
@@ -68,6 +72,8 @@ public class TraditionalRule implements RuleStrategy {
             default:
                 // do nothing
         }
+
+        pairFound = false;
         return score;
     }
 
@@ -75,9 +81,9 @@ public class TraditionalRule implements RuleStrategy {
     public Score getScore(Point type, Hand hand, Card starter) {
         Score score = null;
         switch (type) {
-//            case STARTER:
-//                score = getStarter(type, hand, starter);
-//                break;
+            case STARTER:
+                score = getStarter(type, hand, starter);
+                break;
             case FIFTEEN:
             case THIRTYONE:
                 score = getTotals(type, hand, starter);
@@ -112,8 +118,7 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a starter ScoreItem if the starter card is a Jack
-    public Score getStarter(Hand hand, Card starter) {
-        Point type = Point.STARTER;
+    public Score getStarter(Point type, Hand hand, Card starter) {
         if (starter.getRank().equals(Cribbage.Rank.JACK)) {
             ArrayList<Card> cards = new ArrayList<Card>();
             cards.add(starter);
@@ -173,61 +178,132 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     // returns a Pair Score for any pairs in a given hand
+//    public Score getPairs(Point type, Hand hand, Card starter) {
+//        if (starter != null) {
+//            hand.insert(starter, false);
+//        }
+//        Hand[] pairs = null;
+//
+//        int num = 0;
+//        switch (type) {
+//            case PAIR2:
+//                num = 2;
+//                break;
+//            case PAIR3:
+//                num = 3;
+//                break;
+//            case PAIR4:
+//                num = 4;
+//                break;
+//        }
+//
+//        Hand h = new Hand(deck);
+//        for (Card C: hand.getCardList()) h.insert(C.getSuit(), C.getRank(), false); // clone hand
+//
+//        // get subset of hand with 2, 3 or 4 cards.
+//        int index = 0;
+//        while (h.getNumberOfCards() > num) {
+//            h.remove(index, false);
+//        }
+//
+//        switch (type) {
+//            case PAIR2:
+//                pairs = h.extractPairs();
+//                break;
+//            case PAIR3:
+//                pairs = h.extractTrips();
+//                break;
+//            case PAIR4:
+//                pairs = h.extractQuads();
+//                break;
+//        }
+//        for (Hand pair : pairs) {
+//            if (pair.isEmpty()) {
+//                return null;
+//            }
+//        }
+//
+//        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+//        for (Hand pair : pairs) {
+//            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
+//        }
+//
+//        if (scoreComposite.isEmpty()) {
+//            return null;
+//        } else {
+//            return scoreComposite;
+//        }
+//    }
+
     public Score getPairs(Point type, Hand hand, Card starter) {
-        if (starter != null) {
-            hand.insert(starter, false);
-        }
-        Hand[] pairs = null;
+        if(starter != null) {
 
-        int num = 0;
-        switch (type) {
-            case PAIR2:
-                num = 2;
-                break;
-            case PAIR3:
-                num = 3;
-                break;
-            case PAIR4:
-                num = 4;
-                break;
-        }
+        } else {
+            Card lastCard = hand.getLast();
 
-        Hand h = new Hand(deck);
-        for (Card C: hand.getCardList()) h.insert(C.getSuit(), C.getRank(), false); // clone hand
+            // Used to store the pair found and for return as score.
+            Hand result = new Hand(deck);
 
-        // get subset of hand with 2, 3 or 4 cards.
-        int index = 0;
-        while (h.getNumberOfCards() > num) {
-            h.remove(index, false);
-        }
+            int counter = 1;
 
-        switch (type) {
-            case PAIR2:
-                pairs = h.extractPairs();
-                break;
-            case PAIR3:
-                pairs = h.extractTrips();
-                break;
-            case PAIR4:
-                pairs = h.extractQuads();
-                break;
-        }
-        for (Hand pair : pairs) {
-            if (pair.isEmpty()) {
-                return null;
+            ScoreComposite scoreComposite = new ScoreComposite(type.name);
+
+            // Checks for pair from the last card in the hand.
+            for(int numOfCards = hand.getNumberOfCards() - 1; numOfCards > 0; numOfCards--) {
+                switch(type) {
+                    case PAIR4:
+                        // Checks if the card has the same rank as the last card played
+                        if(hand.getCardList().get(numOfCards - 1).getRankId() == lastCard.getRankId()) {
+                            // Stores a clone of the card checked in a newly created hand.
+                            result.insert(hand.getCardList().get(numOfCards - 1).clone(),false);
+                            counter++;
+                            // Once counter reaches 4 the loop ends and returns a score.
+                            if(counter == 4) {
+                                scoreComposite.add(new ScoreItem(type.name, type.points, result.getCardList()));
+                                pairFound = true;
+                                return scoreComposite;
+                            }
+                        } else {
+                            return null;
+                        }
+                        break;
+                    case PAIR3:
+                        // Checks if the card has the same rank as the last card played
+                        if(hand.getCardList().get(numOfCards - 1).getRankId() == lastCard.getRankId()) {
+                            // Stores a clone of the card checked in a newly created hand.
+                            result.insert(hand.getCardList().get(numOfCards - 1).clone(),false);
+                            counter++;
+                            // Once counter reaches 4 the loop ends and returns a score.
+                            if(counter == 3) {
+                                scoreComposite.add(new ScoreItem(type.name, type.points, result.getCardList()));
+                                pairFound = true;
+                                return scoreComposite;
+                            }
+                        } else { // Adjacent cards in the hand do not have the same rank.
+                            return null;
+                        }
+                        break;
+                    case PAIR2:
+                        // Checks if the card has the same rank as the last card played
+                        if(hand.getCardList().get(numOfCards - 1).getRankId() == lastCard.getRankId()) {
+                            // Stores a clone of the card checked in a newly created hand.
+                            result.insert(hand.getCardList().get(numOfCards - 1).clone(),false);
+                            counter++;
+                            // Once counter reaches 4 the loop ends and returns a score.
+                            if(counter == 2) {
+                                scoreComposite.add(new ScoreItem(type.name, type.points, result.getCardList()));
+                                pairFound = true;
+                                return scoreComposite;
+                            }
+                        } else { // Adjacent cards in the hand do not have the same rank.
+                            return null;
+                        }
+                        break;
+                }
             }
         }
 
-        ScoreComposite scoreComposite = new ScoreComposite(type.name);
-        for (Hand pair : pairs) {
-            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
-        }
-
-        if (scoreComposite.isEmpty()) {
-            return null;
-        } else {
-            return scoreComposite;
-        }
+        return null;
     }
 
     // returns a runs Score for any runs in a given hand
@@ -245,16 +321,12 @@ public class TraditionalRule implements RuleStrategy {
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
         for (Hand run : runs) {
-            if (run.contains(hand.getLast()) && starter == null) { // this is a new run
+            if (run.contains( hand.getLast() ) && starter == null) { // this is a new run
                 scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
             }
         }
 
-        if (scoreComposite.isEmpty()) {
-            return null;
-        } else {
-            return scoreComposite;
-        }
+        return scoreComposite;
     }
 
     // returns a flushes Score for any flushes in a given hand
@@ -281,11 +353,7 @@ public class TraditionalRule implements RuleStrategy {
             }
         }
 
-        if (scoreComposite.isEmpty()) {
-            return null;
-        } else {
-            return scoreComposite;
-        }
+        return scoreComposite;
     }
 
     //returns a jack Score if a given card has a Jack with the same suit as the starter card.
@@ -356,4 +424,6 @@ public class TraditionalRule implements RuleStrategy {
         }
         return combos;
     }
+
+
 }

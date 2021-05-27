@@ -20,6 +20,10 @@ public class ScoreItem implements Score {
         return name + "," + cards.toString();
     }
 
+    public ArrayList<Card> getCards() {
+        return cards;
+    }
+
     @Override
     public String getName() {
         return name;
@@ -31,7 +35,6 @@ public class ScoreItem implements Score {
 
     @Override
     public int getScore() {
-        System.out.println("CALLED HERE");
         return points;
     }
 }
