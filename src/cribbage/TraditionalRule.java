@@ -237,7 +237,33 @@ public class TraditionalRule implements RuleStrategy {
 //    }
 
     public Score getPairs(Point type, Hand hand, Card starter) {
-        if(starter != null) {
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+        if(starter != null) { // this is the show
+            hand.insert(starter, false);
+
+            Hand[] pairs = null;
+
+            switch (type) {
+            case PAIR2:
+                pairs = hand.extractPairs();
+                break;
+            case PAIR3:
+                pairs = hand.extractTrips();
+                break;
+            case PAIR4:
+                pairs = hand.extractQuads();
+                break;
+        }
+
+        if (pairs.length == 0) { // No pairs found
+            return null;
+        }
+
+        for (Hand pair : pairs) {
+            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
+        }
+
+        return scoreComposite;
 
         } else {
             Card lastCard = hand.getLast();
@@ -246,8 +272,6 @@ public class TraditionalRule implements RuleStrategy {
             Hand result = new Hand(deck);
 
             int counter = 1;
-
-            ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
             // Checks for pair from the last card in the hand.
             for(int numOfCards = hand.getNumberOfCards() - 1; numOfCards > 0; numOfCards--) {
