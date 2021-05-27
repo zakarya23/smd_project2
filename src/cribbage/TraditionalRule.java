@@ -378,21 +378,26 @@ public class TraditionalRule implements RuleStrategy {
             }
         }
 
-        return scoreComposite;
+        if (scoreComposite.isEmpty()) {
+            return null;
+        } else {
+            return scoreComposite;
+        }
     }
 
     //returns a jack Score if a given card has a Jack with the same suit as the starter card.
     public Score getJack(Point type, Hand hand, Card starter) {
-        ArrayList<Card> cards = hand.getCardList();
-        for (Card card: cards) {
-            if (card.getRank().equals(Cribbage.Rank.JACK) && card.getSuit().equals(starter.getSuit())) {
-                ArrayList<Card> jack = new ArrayList<Card>();
-                cards.add(starter);
-                return new ScoreItem(type.name, type.points, jack);
+            ScoreComposite scoreComposite = new ScoreComposite(type.name);
+            ArrayList<Card> cards = hand.getCardList();
+            for (Card card : cards) {
+                if (card.getRank().equals(Cribbage.Rank.JACK) && card.getSuit().equals(starter.getSuit())) {
+                    ArrayList<Card> jack = new ArrayList<Card>();
+                    jack.add(card);
+                    scoreComposite.add(new ScoreItem(type.name, type.points, jack));
+                    return scoreComposite;
+                }
             }
-        }
         return null;
-
     }
 
     public ArrayList<Card[]> getCombinations(ArrayList<Card> arr)  {
