@@ -242,15 +242,9 @@ public class Cribbage extends CardGame {
 		file.append(logFileName,eventMessage);
 
 		// Checks if starter has score.
-		ScoreItem starterScore = (ScoreItem) totalScore.getStarter(starter);
+		ScoreComposite starterScore = (ScoreComposite) totalScore.getAllScores(event,starter,null);
 
-		if(starterScore != null) {
-			scores[dealer] += starterScore.getScore();
-			updateScoreGraphics(dealer);
-
-			String scoreMessage = "score,P1," + scores[dealer] + ',' + starterScore.getScore() + ',' + canonical(starter) + '\n';
-			file.append(logFileName,scoreMessage);
-		}
+		updateScore(starterScore,dealer);
 	}
 
 	static int total(Hand hand) {

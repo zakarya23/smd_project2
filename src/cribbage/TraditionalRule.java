@@ -7,7 +7,6 @@ import ch.aplu.jcardgame.Hand;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 
 public class TraditionalRule implements RuleStrategy {
 
@@ -95,9 +94,9 @@ public class TraditionalRule implements RuleStrategy {
     public Score getScore(Point type, Hand hand, Card starter) {
         Score score = null;
         switch (type) {
-//            case STARTER:
-//                score = getStarter(hand, starter);
-//                break;
+            case STARTER:
+                score = getStarter(hand);
+                break;
             case FIFTEEN:
             case THIRTYONE:
                 score = getTotals(type, hand, starter);

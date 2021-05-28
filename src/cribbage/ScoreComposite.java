@@ -27,8 +27,6 @@ public class ScoreComposite implements Score {
     public void add(Score score) {
         if (score != null) {
             scores.add(score);
-            System.out.println(score.getClass());
-            System.out.println(scores);
         }
     }
     // TRY TO FIX ARRAY
