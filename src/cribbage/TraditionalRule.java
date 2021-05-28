@@ -6,6 +6,7 @@ import ch.aplu.jcardgame.Hand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class TraditionalRule implements RuleStrategy {
 
