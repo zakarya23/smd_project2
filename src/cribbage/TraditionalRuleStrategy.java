@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class TraditionalRule implements RuleStrategy {
+public class TraditionalRuleStrategy implements RuleStrategy {
 
     private final Deck deck;
     private boolean pairFound = false;
     private boolean runFound = false;
 
-    public TraditionalRule(Deck deck) {
+    public TraditionalRuleStrategy(Deck deck) {
         this.deck = deck;
     }
 
@@ -201,7 +201,7 @@ public class TraditionalRule implements RuleStrategy {
                 break;
             }
 
-            if (pairs.length == 0) { // No pairs found
+            if (pairs ==  null || pairs.length == 0) { // No pairs found
                 return null;
             }
 
@@ -373,6 +373,10 @@ public class TraditionalRule implements RuleStrategy {
                     break;
                 default:
                     break;
+            }
+
+            if (runs ==  null || runs.isEmpty()) { // No runs found
+                return null;
             }
 
             // adds a new score to the score composite for every run found.

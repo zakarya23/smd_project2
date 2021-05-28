@@ -29,7 +29,7 @@ public class ScoreComposite implements Score {
             scores.add(score);
         }
     }
-    // TRY TO FIX ARRAY
+
     public void remove(int index) {
         scores.remove(index);
     }

@@ -143,7 +143,7 @@ public class Cribbage extends CardGame {
 	final Font bigFont = new Font("Serif", Font.BOLD, 36);
 
 	// Scoring
-	private TraditionalRule totalScore = new TraditionalRule(deck);
+	private TraditionalRuleStrategy ruleStrategy = new TraditionalRuleStrategy(deck);
 
 	private void initScore() {
 		for (int i = 0; i < nPlayers; i++) {
@@ -242,7 +242,7 @@ public class Cribbage extends CardGame {
 		file.append(logFileName,eventMessage);
 
 		// Checks if starter has score.
-		ScoreComposite starterScore = (ScoreComposite) totalScore.getAllScores(event,starter,null);
+		ScoreComposite starterScore = (ScoreComposite) ruleStrategy.getAllScores(event,starter,null);
 
 		updateScore(starterScore,dealer);
 	}
@@ -290,7 +290,7 @@ public class Cribbage extends CardGame {
 			if (nextCard == null) {
 				if (s.go) {
 
-					ScoreItem score = totalScore.getGoScore(hands[s.lastPlayer]);
+					ScoreItem score = ruleStrategy.getGoScore(hands[s.lastPlayer]);
 
 					if (score != null) {
 						scores[s.lastPlayer] += score.getScore();
@@ -317,7 +317,7 @@ public class Cribbage extends CardGame {
 
 				if (total(s.segment) == thirtyone) {
 					// lastPlayer gets 2 points for a 31
-					ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
+					ScoreComposite scoresApplicable = (ScoreComposite) ruleStrategy.getAllScores(playEvent,s.segment,null);
 
 					updateScore(scoresApplicable, s.lastPlayer);
 
@@ -325,7 +325,7 @@ public class Cribbage extends CardGame {
 					currentPlayer = (currentPlayer+1) % 2;
 				} else {
 					// if total(segment) == 15, lastPlayer gets 2 points for a 15
-					ScoreComposite scoresApplicable = (ScoreComposite) totalScore.getAllScores(playEvent,s.segment,null);
+					ScoreComposite scoresApplicable = (ScoreComposite) ruleStrategy.getAllScores(playEvent,s.segment,null);
 
 					updateScore(scoresApplicable, s.lastPlayer);
 
@@ -353,7 +353,7 @@ public class Cribbage extends CardGame {
 			String showMessage = event + ",P" + i + "," + canonical(starter.getFirst()) + '+' + canonical(startingHands[i]) + '\n';
 			file.append(logFileName, showMessage);
 
-			ScoreComposite score = (ScoreComposite) totalScore.getAllScores(event, startingHands[i], starter);
+			ScoreComposite score = (ScoreComposite) ruleStrategy.getAllScores(event, startingHands[i], starter);
 
 			updateScore(score, i);
 		}
@@ -362,7 +362,7 @@ public class Cribbage extends CardGame {
 		String showMessage = event + ",P1," + canonical(starter.getFirst()) + '+' + canonical(crib) + '\n';
 		file.append(logFileName,showMessage);
 
-		ScoreComposite score = totalScore.getAllScores(event,crib,starter);
+		ScoreComposite score = ruleStrategy.getAllScores(event,crib,starter);
 
 		updateScore(score,dealer);
 		// all points that come out of show go to dealer!
