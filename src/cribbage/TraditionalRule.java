@@ -339,7 +339,7 @@ public class TraditionalRule implements RuleStrategy {
         for (Card[] combo: combos) {
             boolean isRun = true;
 
-            if (combo.length == length) {
+            if (combo.length >= length) {
                 Arrays.sort(combo, new SortRank());
                 for (int j = 1; j < combo.length; j++) {
                     if (!isAdjacent(combo[j], combo[j - 1])) {   // the cards are not in sequence
@@ -353,6 +353,22 @@ public class TraditionalRule implements RuleStrategy {
                 }
             }
         }
+
+        ArrayList<ArrayList<Card>> removalList = new ArrayList<ArrayList<Card>>();
+        for (ArrayList<Card> current: sequences) {
+            for (ArrayList<Card> next: sequences) {
+                if ((!next.equals(current) && next.containsAll(current))) { // the run is already in a larger run
+                    removalList.add(current);
+                }
+            }
+        }
+
+        for (ArrayList<Card> current: sequences) {
+            if (current.size() != length) { // this is a run of the wrong size
+                removalList.add(current);
+            }
+        }
+        sequences.removeAll(removalList);
         return sequences;
     }
 
