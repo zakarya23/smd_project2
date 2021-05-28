@@ -11,8 +11,7 @@ import java.util.Iterator;
 
 public class TraditionalRule implements RuleStrategy {
 
-    private Deck deck;
-
+    private final Deck deck;
     private boolean pairFound = false;
     private boolean runFound = false;
 
@@ -20,23 +19,27 @@ public class TraditionalRule implements RuleStrategy {
         this.deck = deck;
     }
 
+    // A point contains the name and number of points for each type of score
     public enum Point {
-        STARTER("starter", 2),
-        PAIR2("pair2", 2), PAIR3("pair3", 6), PAIR4("pair4", 12),
-        RUN3("run3", 3), RUN4("run4", 4), RUN5("run5", 5), RUN6("run6", 6), RUN7("run7", 7),
-        FIFTEEN("fifteen", 2), THIRTYONE("thirtyone", 2), GO("go", 1),
-        FLUSH4("flush4", 4), FLUSH5("flush5", 5),
-        JACK("jack", 1);
+        STARTER("starter", 2, 1),
+        PAIR2("pair2", 2, 2), PAIR3("pair3", 6, 3), PAIR4("pair4", 12, 4),
+        RUN3("run3", 3, 3), RUN4("run4", 4, 4), RUN5("run5", 5, 5), RUN6("run6", 6, 6), RUN7("run7", 7, 7),
+        FIFTEEN("fifteen", 2, 15), THIRTYONE("thirtyone", 2, 31), GO("go", 1, 1),
+        FLUSH4("flush4", 4, 4), FLUSH5("flush5", 5, 5),
+        JACK("jack", 1, 1);
 
         public final String name;
         public final int points;
+        public final int num;
 
-        Point(String name, int points) {
+        Point(String name, int points, int num) {
             this.name = name;
             this.points = points;
+            this.num = num;
         }
     }
 
+    // A phase contains an array of the type of points that can be scored while the phase is active
     public enum Phase {
         STARTER(new Point[]{Point.STARTER}),
         PLAY(new Point[]{Point.FIFTEEN, Point.THIRTYONE, Point.GO, Point.RUN7, Point.RUN6, Point.RUN5, Point.RUN4, Point.RUN3, Point.PAIR4, Point.PAIR3, Point.PAIR2}),
@@ -48,6 +51,7 @@ public class TraditionalRule implements RuleStrategy {
             this.rules = rules;
         }
     }
+
     // returns a Score object that comprises all the scoreItems applicable in a given turn
     public ScoreComposite getAllScores(String phase, Hand hand, Hand starter) {
         Card starterCard = null;
@@ -98,9 +102,6 @@ public class TraditionalRule implements RuleStrategy {
             case THIRTYONE:
                 score = getTotals(type, hand, starter);
                 break;
-//            case GO:
-//                score = getGo(type, hand, starter);
-//                break;
             case PAIR2:
             case PAIR3:
             case PAIR4:
@@ -157,51 +158,31 @@ public class TraditionalRule implements RuleStrategy {
             ArrayList<Card[]> combos = getCombinations(hand.getCardList());
             for(Card[] combo: combos) {
 
-                if (type.equals(Point.FIFTEEN) && totalValue(combo) == 15)  {
+                if (type.equals(Point.FIFTEEN) && totalValue(combo) == Point.FIFTEEN.num)  {
                     ArrayList<Card> cards = new ArrayList<Card>(Arrays.asList(combo));
                     scoreComposite.add(new ScoreItem(type.name, type.points, cards));
                 }
             }
-
+            if (scoreComposite.isEmpty()) {
+                return null;
+            }
             return scoreComposite;
         }
 
-        int total = Cribbage.total(hand);
-
-
-        if (type.equals(Point.FIFTEEN) && total == 15)  {
-            return new ScoreItem(type.name, type.points, hand.getCardList());
-        }
-
-        if (type.equals(Point.THIRTYONE) && total == 31) {
+        // calculate the total card value of the hand and compare with fifteen or thiry-one
+        if (Cribbage.total(hand) == type.num)  {
             return new ScoreItem(type.name, type.points, hand.getCardList());
         }
 
         return null;
     }
 
-    // returns a go ScoreItem if the values of the cards are below 31 but neither player can play another card
-//    public ScoreItem getGo(Hand hand) {
-//        Point type = Point.GO;
-//        int total = Cribbage.total(hand);
-//        boolean go = true;
-//        ArrayList<Card> cards = hand.getCardList();
-//        for (Card card: cards) {
-//            if (card.getValue() + total < 31 ) {
-//                go = false; // found playable card
-//                break;
-//            }
-//            if (go) {
-//                return new ScoreItem(type.name, type.points, hand.getCardList());
-//            }
-//        }
-//        return null;
-//    }
-
+    // returns a go scoreItem
     public ScoreItem getGoScore(Hand hand) {
         return new ScoreItem(Point.GO.name, Point.GO.points, hand.getCardList());
     }
 
+    // returns a scoreComposite with all the pairs found with or without a starter
     public Score getPairs(Point type, Hand hand, Card starter) {
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
         if(starter != null) { // this is the show
@@ -210,27 +191,26 @@ public class TraditionalRule implements RuleStrategy {
             Hand[] pairs = null;
 
             switch (type) {
-            case PAIR2:
-                pairs = hand.extractPairs();
+                case PAIR2:
+                    pairs = hand.extractPairs();
+                    break;
+                case PAIR3:
+                    pairs = hand.extractTrips();
+                    break;
+                case PAIR4:
+                    pairs = hand.extractQuads();
                 break;
-            case PAIR3:
-                pairs = hand.extractTrips();
-                break;
-            case PAIR4:
-                pairs = hand.extractQuads();
-                break;
-        }
+            }
 
-        if (pairs.length == 0) { // No pairs found
-            return null;
-        }
+            if (pairs.length == 0) { // No pairs found
+                return null;
+            }
 
-        for (Hand pair : pairs) {
-            System.out.println(pair);
-            scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
-        }
+            for (Hand pair : pairs) {
+                scoreComposite.add(new ScoreItem(type.name, type.points, pair.getCardList()));
+            }
 
-        return scoreComposite;
+            return scoreComposite;
 
         } else {
             Card lastCard = hand.getLast();
@@ -296,7 +276,6 @@ public class TraditionalRule implements RuleStrategy {
                 }
             }
         }
-
         return null;
     }
 
@@ -320,7 +299,6 @@ public class TraditionalRule implements RuleStrategy {
                 isRun = false;
             }
         }
-
         if (isRun) {     // tmp is a sequence of the right length
             sequences.add(new ArrayList<>(cards));
             cards.clear();
@@ -343,28 +321,26 @@ public class TraditionalRule implements RuleStrategy {
                 Arrays.sort(combo, new SortRank());
                 for (int j = 1; j < combo.length; j++) {
                     if (!isAdjacent(combo[j], combo[j - 1])) {   // the cards are not in sequence
-
                         isRun = false;
                     }
                 }
-
                 if (isRun) {     // tmp is a sequence of the right length
                     sequences.add(new ArrayList<>(Arrays.asList(combo)));
                 }
             }
         }
-
+        // filter out runs that are already present in a larger run
         ArrayList<ArrayList<Card>> removalList = new ArrayList<ArrayList<Card>>();
         for (ArrayList<Card> current: sequences) {
             for (ArrayList<Card> next: sequences) {
-                if ((!next.equals(current) && next.containsAll(current))) { // the run is already in a larger run
+                if ((!next.equals(current) && next.containsAll(current))) {
                     removalList.add(current);
                 }
             }
         }
-
+        // filter out runs that are the wrong length
         for (ArrayList<Card> current: sequences) {
-            if (current.size() != length) { // this is a run of the wrong size
+            if (current.size() != length) {
                 removalList.add(current);
             }
         }
@@ -377,6 +353,7 @@ public class TraditionalRule implements RuleStrategy {
         return Math.abs(((Cribbage.Rank) a.getRank()).order - ((Cribbage.Rank) b.getRank()).order) == 1;
     }
 
+    // returns a scoreComposite of all the runs found with or without a starter
     public Score getRuns(Point type, Hand hand, Card starter) {
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
@@ -426,6 +403,7 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
+    // returns a score with runs found of a certain length
     private Score runAlgorithm(Point type, Hand hand, int runLength) {
         ArrayList<ArrayList<Card>> runs;
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
@@ -449,7 +427,7 @@ public class TraditionalRule implements RuleStrategy {
         }
     }
 
-    // returns a flushes Score for any flushes in a given hand
+    // returns a flush Score for any flushes in a given hand with or without a starter
     public Score getFlushes(Point type, Hand hand, Card starter) {
         int num;
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
@@ -563,7 +541,6 @@ public class TraditionalRule implements RuleStrategy {
                     combos.add(tmp);
                     break;
             }
-//            System.out.println(combos.size());
         }
         return combos;
     }

@@ -299,7 +299,7 @@ public class Cribbage extends CardGame {
 					ScoreItem score = totalScore.getGoScore(hands[s.lastPlayer]);
 
 					if (score != null) {
-						scores[s.lastPlayer] += score.getPoints();
+						scores[s.lastPlayer] += score.getScore();
 						updateScoreGraphics(s.lastPlayer);
 
 						String message = scoreEventMessage + scores[s.lastPlayer] + ',' + score.getScore() + ",go\n";

@@ -6,12 +6,12 @@ import java.util.ArrayList;
 
 public class ScoreItem implements Score {
     String name;
-    int points;
+    int score;
     ArrayList<Card> cards = new ArrayList<Card>();
 
-    public ScoreItem(String name, int points, ArrayList<Card> cards) {
+    public ScoreItem(String name, int score, ArrayList<Card> cards) {
         this.name = name;
-        this.points = points;
+        this.score = score;
         this.cards = cards;
     }
 
@@ -29,12 +29,8 @@ public class ScoreItem implements Score {
         return name;
     }
 
-    public int getPoints() {
-        return points;
-    }
-
     @Override
     public int getScore() {
-        return points;
+        return score;
     }
 }

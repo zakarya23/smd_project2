@@ -8,16 +8,13 @@ public class ScoreComposite implements Score {
 
     public ScoreComposite(String name) {
         this.name = name;
-        this.scores = new ArrayList<>();
+        this.scores = new ArrayList<Score>();
     }
 
     @Override
     public int getScore() {
-        System.out.println("POP");
         int score = 0;
         for (Score s: scores) {
-            System.out.print("+ ");
-            System.out.println(s.getScore());
             score += s.getScore();
         }
         return score;
@@ -32,8 +29,6 @@ public class ScoreComposite implements Score {
             scores.add(score);
             System.out.println(score.getClass());
             System.out.println(scores);
-//            System.out.println("scores");
-//            System.out.println(scores);
         }
     }
     // TRY TO FIX ARRAY
@@ -45,10 +40,10 @@ public class ScoreComposite implements Score {
         return scores.isEmpty();
     }
 
+    @Override
     public String getName() {
         return name;
     }
-
 
     @Override
     public String toString() {
@@ -58,10 +53,4 @@ public class ScoreComposite implements Score {
                 '}';
     }
 
-    public void printNames() {
-        for (Score s: scores) {
-            System.out.print(s.toString());
-            System.out.print(",");
-        }
-    }
 }
