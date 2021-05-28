@@ -128,6 +128,8 @@ public class Cribbage extends CardGame {
 	private final Hand[] hands = new Hand[nPlayers];
 	private Hand starter;
 	private Hand crib;
+
+	private int dealer = 1;
 	private Hand[] startingHands = new Hand[nPlayers];
 	private String logFileName = "cribbage.log";
 	private File file = File.getInstance();
@@ -142,7 +144,6 @@ public class Cribbage extends CardGame {
 
 	// Scoring
 	private TraditionalRule totalScore = new TraditionalRule(deck);
-
 
 	private void initScore() {
 		for (int i = 0; i < nPlayers; i++) {
@@ -227,7 +228,6 @@ public class Cribbage extends CardGame {
 
 	private void starter(Hand pack) {
 		String event = "starter";
-		int dealer = 1;
 
 		starter = new Hand(deck);  // if starter is a Jack, the dealer gets 2 points
 		RowLayout layout = new RowLayout(starterLocation, 0);
@@ -370,7 +370,7 @@ public class Cribbage extends CardGame {
 
 		ScoreComposite score = totalScore.getAllScores(event,crib,starter);
 
-		updateScore(score,1);
+		updateScore(score,dealer);
 		// all points that come out of show go to dealer!
 	}
 
@@ -380,6 +380,7 @@ public class Cribbage extends CardGame {
 
 		Iterator scoreIterator = scoresApplicable.getScores().iterator();
 
+		// Loops through all score found.
 		while(scoreIterator.hasNext()) {
 			Score currentScore = (Score) scoreIterator.next();
 
@@ -392,6 +393,10 @@ public class Cribbage extends CardGame {
 
 					updateScoreGraphics(playerNumber);
 
+					// Stores the score inside player class as score composite.
+					players[playerNumber].addScore(scoreItem);
+
+					// Logging message
 					String message = scoreEventMessage + this.scores[playerNumber] + ',' + scoreItem.getScore() + ',' + ((ScoreItem) currentScore).getName() + '\n';
 					file.append(logFileName, message);
 					break;
@@ -401,13 +406,18 @@ public class Cribbage extends CardGame {
 
 					while(scoreCompositeIterator.hasNext()) {
 						scoreItem = (ScoreItem) scoreCompositeIterator.next();
-						scores[playerNumber] += scoreItem.getScore();
 
+						scores[playerNumber] += scoreItem.getScore();
 						updateScoreGraphics(playerNumber);
 
+						// Stores the score inside player class as score composite.
+						players[playerNumber].addScore(scoreItem);
+
+						// Used to store cards for logging.
 						Hand scoreCondition = new Hand(deck);
 						scoreCondition.getCardList().addAll(scoreItem.getCards());
 
+						// Logging message
 						message = scoreEventMessage + this.scores[playerNumber] + ',' + scoreItem.getScore() + ',' + scoreItem.getName() + ',' + canonical(scoreCondition)+ '\n';
 						file.append(logFileName, message);
 					}
