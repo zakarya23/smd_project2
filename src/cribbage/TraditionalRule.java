@@ -6,6 +6,7 @@ import ch.aplu.jcardgame.Hand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class TraditionalRule implements RuleStrategy {
@@ -137,6 +138,7 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
+    // returns the total card value of an array of cards
     public int totalValue(Card[] cards) {
         int total = 0;
         for(Card c: cards) {
@@ -298,35 +300,95 @@ public class TraditionalRule implements RuleStrategy {
         return null;
     }
 
+    // Card comparator for sorting cards by rank
+    static class SortRank implements Comparator<Card> {
+        public int compare(Card a, Card b) {
+            return ((Cribbage.Rank) a.getRank()).order - ((Cribbage.Rank) b.getRank()).order;
+        }
+    }
+
+    // Returns an arraylist of card sequences
+    public ArrayList<ArrayList<Card>> getSequences(int length, Hand hand) {
+
+        ArrayList<ArrayList<Card>> sequences = new ArrayList<ArrayList<Card>>();
+        ArrayList<Card> cards = hand.getCardList();
+        boolean isRun = true;
+
+        cards.sort(new SortRank());
+        for (int j = 1; j < cards.size(); j++) {
+            if (!isAdjacent(cards.get(j), cards.get(j - 1))) {   // the cards are not in sequence
+                isRun = false;
+            }
+        }
+
+        if (isRun) {     // tmp is a sequence of the right length
+            sequences.add(new ArrayList<>(cards));
+            cards.clear();
+        }
+
+        return sequences;
+    }
+
+    // Returns an arraylist of card sequences
+    public ArrayList<ArrayList<Card>> getSequencesShow(int length, Hand hand) {
+
+        ArrayList<ArrayList<Card>> sequences = new ArrayList<ArrayList<Card>>();
+        ArrayList<Card> cards = hand.getCardList();
+
+        ArrayList<Card[]> combos = getCombinations(cards);
+        for (Card[] combo: combos) {
+            boolean isRun = true;
+
+            if (combo.length == length) {
+                Arrays.sort(combo, new SortRank());
+                for (int j = 1; j < combo.length; j++) {
+                    if (!isAdjacent(combo[j], combo[j - 1])) {   // the cards are not in sequence
+
+                        isRun = false;
+                    }
+                }
+
+                if (isRun) {     // tmp is a sequence of the right length
+                    sequences.add(new ArrayList<>(Arrays.asList(combo)));
+                }
+            }
+        }
+        return sequences;
+    }
+
+    // returns true if cards a and b are next to each other in sequence
+    public boolean isAdjacent(Card a, Card b ) {
+        return Math.abs(((Cribbage.Rank) a.getRank()).order - ((Cribbage.Rank) b.getRank()).order) == 1;
+    }
+
     public Score getRuns(Point type, Hand hand, Card starter) {
+        ScoreComposite scoreComposite = new ScoreComposite(type.name);
+
         if(starter != null) {
-            // Need to work on the show
+
             hand.insert(starter,false);
-
-            ScoreComposite scoreComposite = new ScoreComposite(type.name);
-
-            Hand[] runs = null;
+            ArrayList<ArrayList<Card>> runs = null;
 
             switch (type) {
                 case RUN5:
-                    runs = hand.extractSequences(5);
+                    runs = getSequencesShow(5,hand);
                     break;
                 case RUN4:
-                    runs = hand.extractSequences(4);
+                    runs = getSequencesShow(4,hand);
                     break;
                 case RUN3:
-                    runs = hand.extractSequences(3);
+                    runs = getSequencesShow(3,hand);
                     break;
                 default:
                     break;
             }
 
             // adds a new score to the score composite for every run found.
-            for(Hand run: runs) {
-                scoreComposite.add(new ScoreItem(type.name, type.points, run.getCardList()));
+            for(ArrayList<Card> run: runs) {
+                scoreComposite.add(new ScoreItem(type.name, type.points, run));
             }
 
-            if(scoreComposite.isEmpty()) {
+            if (scoreComposite.isEmpty()) {
                 return null;
             }
 
@@ -349,7 +411,7 @@ public class TraditionalRule implements RuleStrategy {
     }
 
     private Score runAlgorithm(Point type, Hand hand, int runLength) {
-        Hand[] runs;
+        ArrayList<ArrayList<Card>> runs;
         ScoreComposite scoreComposite = new ScoreComposite(type.name);
 
         // Checks if hand has length longer or equal to the run length
@@ -362,10 +424,10 @@ public class TraditionalRule implements RuleStrategy {
         // Adds the last runLength cards to be checked in the hand to a temporary hand.
         cardToCheck.getCardList().addAll(hand.getCardList().subList(hand.getNumberOfCards() - runLength, hand.getNumberOfCards()));
         // Checks if the sublist contains a run
-        if ((runs = cardToCheck.extractSequences(runLength)).length == 0) {
+        if ((runs = getSequences(runLength, cardToCheck)).size() == 0) {
             return null;
         } else {
-            scoreComposite.add(new ScoreItem(type.name, type.points, runs[0].getCardList()));
+            scoreComposite.add(new ScoreItem(type.name, type.points, runs.get(0)));
             runFound = true;
             return scoreComposite;
         }
